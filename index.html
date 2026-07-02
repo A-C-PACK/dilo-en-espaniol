@@ -1,0 +1,1355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Andamio v2 — habla más con menos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;700&family=Archivo+Black&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --papel:#F7F6F0;
+  --tinta:#1F2126;
+  --azul:#2848E8;
+  --sol:#FFC53D;
+  --teja:#E44E26;
+  --verde:#2E9E5B;
+  --niebla:#E4E1D6;
+  --radius:14px;
+  --shadow:4px 4px 0 var(--tinta);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:var(--papel);
+  color:var(--tinta);
+  font-family:'Archivo',system-ui,sans-serif;
+  font-size:16px;
+  line-height:1.5;
+  min-height:100vh;
+}
+.wrap{max-width:960px;margin:0 auto;padding:0 20px 80px}
+h1,h2,h3,.display{font-family:'Archivo Black','Archivo',sans-serif;font-weight:900;letter-spacing:-.01em}
+button{font-family:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--azul);outline-offset:2px}
+
+/* ---------- header / nav ---------- */
+header{padding:26px 0 10px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.logo{display:flex;align-items:baseline;gap:10px}
+.logo .mark{font-family:'Archivo Black';font-size:1.6rem;background:var(--azul);color:#fff;padding:2px 12px;border:2px solid var(--tinta);box-shadow:var(--shadow);transform:rotate(-2deg);display:inline-block}
+.logo .tag{font-family:'Space Mono',monospace;font-size:.78rem;color:#555}
+nav{display:flex;gap:8px;flex-wrap:wrap}
+nav button{
+  border:2px solid var(--tinta);background:#fff;color:var(--tinta);
+  font-weight:700;font-size:.95rem;padding:9px 18px;border-radius:999px;
+  transition:transform .08s ease;
+}
+nav button:hover{transform:translate(-1px,-1px)}
+nav button.active{background:var(--tinta);color:var(--sol)}
+main section.tab{display:none}
+main section.tab.show{display:block;animation:fadein .25s ease}
+@keyframes fadein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* ---------- hero / sentence machine ---------- */
+.hero{margin:26px 0 34px}
+.hero h1{font-size:clamp(1.6rem,4.5vw,2.6rem);line-height:1.12;max-width:640px}
+.hero h1 em{font-style:normal;color:var(--azul)}
+.hero p.sub{margin-top:10px;max-width:560px;color:#444}
+.machine{
+  margin-top:22px;border:2px solid var(--tinta);border-radius:var(--radius);
+  background:#fff;box-shadow:var(--shadow);padding:22px;overflow:hidden;
+}
+.machine .label{font-family:'Space Mono',monospace;font-size:.72rem;text-transform:uppercase;letter-spacing:.12em;color:#777;margin-bottom:10px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px}
+.slots{display:flex;gap:10px;flex-wrap:wrap;align-items:stretch}
+.slot{
+  flex:1 1 140px;border:2px solid var(--tinta);border-radius:10px;padding:14px 16px;
+  font-family:'Archivo Black';font-size:clamp(1.05rem,2.6vw,1.5rem);text-align:center;
+  background:var(--sol);position:relative;min-height:64px;display:flex;align-items:center;justify-content:center;
+}
+.slot.s2{background:#fff}
+.slot.s3{background:var(--azul);color:#fff}
+.slot .cap{position:absolute;top:-11px;left:12px;background:var(--tinta);color:#fff;font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;padding:1px 8px;border-radius:6px}
+.slot.flip .word{animation:flip .5s ease}
+@keyframes flip{0%{transform:rotateX(90deg);opacity:0}100%{transform:rotateX(0);opacity:1}}
+.machine .eng{margin-top:14px;font-family:'Space Mono',monospace;font-size:.9rem;color:#555;text-align:center;min-height:1.4em}
+.counter{margin-top:18px;text-align:center;font-size:.95rem}
+.counter b{font-family:'Archivo Black';font-size:1.3rem;color:var(--teja)}
+@media (prefers-reduced-motion:reduce){.slot.flip .word{animation:none}main section.tab.show{animation:none}}
+
+/* ---------- cheatsheet ---------- */
+.cat{margin:34px 0 14px;display:flex;align-items:center;gap:12px}
+.cat h2{font-size:1.25rem}
+.cat .rule{flex:1;height:3px;background:var(--tinta)}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.card{
+  border:2px solid var(--tinta);border-radius:var(--radius);background:#fff;
+  box-shadow:var(--shadow);padding:18px;display:flex;flex-direction:column;gap:10px;
+}
+.card .head{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.card h3{font-size:1.05rem;color:var(--azul)}
+.card .gloss{font-family:'Space Mono',monospace;font-size:.72rem;color:#777;text-align:right}
+.forms{display:flex;flex-wrap:wrap;gap:6px}
+.forms span{border:1.5px solid var(--tinta);border-radius:8px;padding:2px 9px;font-size:.82rem;background:var(--papel)}
+.card .ex{font-size:.92rem;border-left:4px solid var(--sol);padding-left:10px}
+.card .ex .en{color:#777;font-size:.82rem}
+.card .tip{font-size:.8rem;color:#555;background:var(--papel);border-radius:8px;padding:8px 10px}
+.practica{align-self:flex-start;border:2px solid var(--tinta);background:var(--sol);border-radius:999px;padding:6px 14px;font-weight:700;font-size:.82rem;box-shadow:2px 2px 0 var(--tinta);transition:transform .08s;margin-top:2px}
+.practica:hover{transform:translate(-1px,-1px)}
+.filterbar{max-width:680px;margin:0 auto 16px;border:2px solid var(--tinta);border-radius:var(--radius);background:#fff;box-shadow:var(--shadow);padding:14px 18px}
+.filterbar .fhead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.filterbar .fhead strong{font-size:.9rem}
+.filterbar .fhead strong em{font-style:normal;color:var(--azul)}
+.fchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.fchip{border:1.5px solid var(--tinta);border-radius:999px;padding:4px 12px;font-size:.8rem;font-weight:700;background:var(--papel);cursor:pointer;font-family:inherit}
+.fchip.on{background:var(--azul);color:#fff}
+.fchip.all{background:var(--tinta);color:var(--sol)}
+.fchip.chains{border-style:dashed}
+.fchip.chains.on{background:var(--teja);color:#fff;border-color:var(--teja);border-style:solid}
+.chainnote{font-size:.74rem;color:var(--azul);font-family:'Space Mono',monospace}
+.phrase-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+.phrase{border:2px solid var(--tinta);border-radius:10px;background:#fff;padding:10px 14px;font-size:.92rem;box-shadow:2px 2px 0 var(--tinta)}
+.phrase b{color:var(--azul)}
+.phrase .en{display:block;font-size:.78rem;color:#777}
+
+/* ---------- forge ---------- */
+.forge-top{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin:26px 0 16px}
+.forge-top .stats{font-family:'Space Mono',monospace;font-size:.8rem;color:#555}
+.forge-top .stats b{color:var(--teja)}
+.drill{
+  border:2px solid var(--tinta);border-radius:var(--radius);background:#fff;
+  box-shadow:var(--shadow);padding:28px;max-width:680px;margin:0 auto;
+}
+.drill .kicker{font-family:'Space Mono',monospace;font-size:.72rem;text-transform:uppercase;letter-spacing:.12em;color:#777}
+.drill .prompt{font-family:'Archivo Black';font-size:clamp(1.3rem,3.4vw,1.9rem);margin:10px 0 4px;line-height:1.2}
+.drill .hintrow{margin:12px 0;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.chip{border:1.5px solid var(--tinta);border-radius:999px;padding:3px 12px;font-size:.8rem;background:var(--sol);font-weight:700}
+.chip.ghost{background:var(--papel);color:#777;border-style:dashed}
+.drill .answer{
+  margin:16px 0 6px;padding:16px;border:2px dashed var(--tinta);border-radius:10px;
+  font-size:1.25rem;font-weight:700;min-height:62px;display:flex;align-items:center;flex-wrap:wrap;gap:6px;
+}
+.drill .answer.hidden-a{color:transparent;user-select:none;background:repeating-linear-gradient(-45deg,var(--niebla),var(--niebla) 8px,#fff 8px,#fff 16px)}
+.heard{margin:8px 0;font-family:'Space Mono',monospace;font-size:.9rem;min-height:1.5em}
+.heard .lbl{color:#777;font-size:.75rem}
+.heard .good{color:var(--verde);font-weight:700}
+.heard .bad{color:var(--teja);font-weight:700}
+.btnrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.btn{
+  border:2px solid var(--tinta);border-radius:10px;padding:12px 20px;font-weight:700;font-size:1rem;
+  background:#fff;box-shadow:3px 3px 0 var(--tinta);transition:transform .08s;
+}
+.btn:hover{transform:translate(-1px,-1px)}
+.btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--tinta)}
+.btn.primary{background:var(--azul);color:#fff}
+.btn.mic{background:var(--teja);color:#fff}
+.btn.mic.listening{background:var(--tinta);color:var(--sol);animation:pulse 1.2s infinite}
+@keyframes pulse{50%{box-shadow:3px 3px 0 var(--teja)}}
+.btn.good{background:var(--verde);color:#fff}
+.btn.bad{background:#fff;color:var(--teja);border-color:var(--teja)}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.verdict{font-family:'Archivo Black';font-size:1.1rem;min-height:1.6em;margin-top:8px}
+.verdict.ok{color:var(--verde)}
+.verdict.no{color:var(--teja)}
+.keyhint{font-family:'Space Mono',monospace;font-size:.7rem;color:#999;margin-top:14px}
+
+/* ---------- scenarios ---------- */
+.scen-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-top:22px}
+.scen-card{border:2px solid var(--tinta);border-radius:var(--radius);background:#fff;box-shadow:var(--shadow);padding:18px;cursor:pointer;text-align:left;transition:transform .08s}
+.scen-card:hover{transform:translate(-2px,-2px)}
+.scen-card .emoji{font-size:1.8rem}
+.scen-card h3{margin:6px 0 4px;font-size:1.05rem}
+.scen-card p{font-size:.85rem;color:#555}
+.scen-card .targets{margin-top:10px;display:flex;flex-wrap:wrap;gap:5px}
+.scen-card .targets span{font-size:.7rem;border:1.5px solid var(--tinta);border-radius:999px;padding:1px 8px;background:var(--sol)}
+.scen-play{max-width:720px;margin:22px auto 0;border:2px solid var(--tinta);border-radius:var(--radius);background:#fff;box-shadow:var(--shadow);padding:26px}
+.scen-play .top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.scen-play h2{font-size:1.3rem}
+.timer{font-family:'Archivo Black';font-size:2.2rem;color:var(--azul);min-width:90px;text-align:right}
+.timer.warn{color:var(--teja)}
+.goals{margin:14px 0;padding-left:20px;font-size:.95rem}
+.goals li{margin:4px 0}
+.tchips{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
+.tchip{border:2px solid var(--tinta);border-radius:999px;padding:5px 14px;font-weight:700;font-size:.85rem;background:var(--papel);transition:background .3s}
+.tchip.hit{background:var(--verde);color:#fff;border-color:var(--verde)}
+.transcript{
+  margin-top:14px;border:2px dashed var(--tinta);border-radius:10px;padding:14px;
+  min-height:90px;font-size:1rem;background:var(--papel);
+}
+.transcript .interim{color:#999}
+.transcript .placeholder{color:#aaa;font-style:italic}
+.scen-summary{margin-top:14px;font-weight:700}
+.timeopts{display:flex;gap:6px;align-items:center}
+.timeopts button{border:1.5px solid var(--tinta);background:#fff;border-radius:8px;padding:4px 10px;font-size:.8rem;font-weight:700}
+.timeopts button.sel{background:var(--tinta);color:var(--sol)}
+.backlink{background:none;border:none;font-family:'Space Mono',monospace;font-size:.8rem;color:var(--azul);text-decoration:underline;padding:0;margin-bottom:6px}
+
+/* ---------- progress ---------- */
+.prog-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-top:22px}
+.prog-card{border:2px solid var(--tinta);border-radius:10px;background:#fff;padding:12px 14px;box-shadow:2px 2px 0 var(--tinta)}
+.prog-card h4{font-size:.9rem;color:var(--azul)}
+.dots{display:flex;gap:4px;margin:8px 0 4px}
+.dots i{width:14px;height:14px;border:1.5px solid var(--tinta);border-radius:50%;background:#fff}
+.dots i.on{background:var(--verde)}
+.prog-card .acc{font-family:'Space Mono',monospace;font-size:.72rem;color:#777}
+.settings{margin-top:34px;border-top:3px solid var(--tinta);padding-top:20px;display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+.settings label{font-weight:700;font-size:.9rem}
+.settings select{font-family:inherit;font-size:.9rem;padding:6px 10px;border:2px solid var(--tinta);border-radius:8px;background:#fff}
+.danger{border-color:var(--teja);color:var(--teja);box-shadow:3px 3px 0 var(--teja)}
+.nomic{background:var(--sol);border:2px solid var(--tinta);border-radius:10px;padding:10px 14px;font-size:.85rem;margin:14px 0;display:none}
+footer{margin-top:60px;font-family:'Space Mono',monospace;font-size:.72rem;color:#999;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="logo">
+    <span class="mark">ANDAMIO</span>
+    <span class="tag">habla más con menos</span>
+  </div>
+  <nav>
+    <button data-tab="aprende" class="active">Aprende</button>
+    <button data-tab="forja">Forja</button>
+    <button data-tab="escenarios">Escenarios</button>
+    <button data-tab="progreso">Progreso</button>
+  </nav>
+</header>
+
+<div class="nomic" id="nomicNote">
+  🎤 Your browser doesn't support speech recognition, so mic checking is off.
+  Use Chrome or Edge to speak your answers — for now, say them out loud and self-grade.
+</div>
+
+<main>
+
+<!-- ============ APRENDE ============ -->
+<section class="tab show" id="tab-aprende">
+  <div class="hero">
+    <h1>Learn <em>20 structures</em>.<br>Unlock <em>thousands</em> of sentences.</h1>
+    <p class="sub">Every card below is a scaffold: conjugate one small verb, bolt on any infinitive, and you can express needs, plans, desires, and the recent past — no new tenses required.</p>
+    <div class="machine" aria-label="Sentence machine">
+      <div class="label"><span>LA MÁQUINA DE FRASES</span><span>estructura + verbo = frase</span></div>
+      <div class="slots">
+        <div class="slot s1"><span class="cap">estructura</span><span class="word" id="m1">tengo que</span></div>
+        <div class="slot s2"><span class="cap">verbo</span><span class="word" id="m2">trabajar</span></div>
+        <div class="slot s3"><span class="cap">extra</span><span class="word" id="m3">mañana</span></div>
+      </div>
+      <div class="eng" id="mEng">= I have to work tomorrow</div>
+      <div class="counter"><b id="comboCount">7,000+</b> sentences from <b id="pieceCount">—</b> pieces you actually memorize</div>
+    </div>
+  </div>
+  <div id="cheatsheet"></div>
+
+  <div class="cat"><h2>Pegamento — glue words for flowing speech</h2><div class="rule"></div></div>
+  <div class="phrase-list" id="phrases"></div>
+</section>
+
+<!-- ============ FORJA ============ -->
+<section class="tab" id="tab-forja">
+  <div class="forge-top">
+    <h2>La Forja · say it in Spanish</h2>
+    <div class="stats">racha <b id="streak">0</b> · hoy <b id="todayCount">0</b> · pendientes <b id="dueCount">0</b></div>
+  </div>
+  <div class="filterbar">
+    <div class="fhead">
+      <strong id="fLabel">Practicando: <em>todas las estructuras</em></strong>
+      <button class="backlink" id="fToggle" type="button">choose structures</button>
+    </div>
+    <div class="fchips" id="fChips" style="display:none"></div>
+  </div>
+  <div class="drill">
+    <div class="kicker" id="dKicker">DILO EN ESPAÑOL →</div>
+    <div class="prompt" id="dPrompt">…</div>
+    <div class="hintrow">
+      <span class="chip ghost" id="dHint">?</span>
+      <button class="backlink" id="hintBtn" type="button">show structure hint</button>
+    </div>
+    <div class="answer hidden-a" id="dAnswer">…</div>
+    <div class="heard" id="dHeard"></div>
+    <div class="verdict" id="dVerdict"></div>
+    <div class="btnrow">
+      <button class="btn mic" id="micBtn">🎤 Habla</button>
+      <button class="btn" id="revealBtn">Mostrar respuesta</button>
+      <button class="btn good" id="gotBtn" disabled>✓ Lo dije bien</button>
+      <button class="btn bad" id="missBtn" disabled>✗ Fallé</button>
+      <button class="btn primary" id="nextBtn">Siguiente →</button>
+    </div>
+    <div class="keyhint">keys: <b>space</b> mic · <b>enter</b> reveal/next · <b>1</b> correct · <b>2</b> missed</div>
+  </div>
+</section>
+
+<!-- ============ ESCENARIOS ============ -->
+<section class="tab" id="tab-escenarios">
+  <div id="scenList">
+    <div class="forge-top" style="margin-top:26px">
+      <h2>Escenarios · talk for a minute</h2>
+      <div class="stats">pick a situation, hit record, use the target structures</div>
+    </div>
+    <div class="scen-grid" id="scenGrid"></div>
+  </div>
+  <div id="scenPlay" style="display:none">
+    <button class="backlink" id="scenBack">← back to scenarios</button>
+    <div class="scen-play">
+      <div class="top">
+        <div>
+          <h2 id="spTitle"></h2>
+          <p id="spDesc" style="color:#555;font-size:.92rem;max-width:440px"></p>
+        </div>
+        <div>
+          <div class="timer" id="spTimer">1:00</div>
+          <div class="timeopts" id="timeOpts">
+            <button data-t="30">30s</button>
+            <button data-t="60" class="sel">60s</button>
+            <button data-t="90">90s</button>
+          </div>
+        </div>
+      </div>
+      <ul class="goals" id="spGoals"></ul>
+      <div><strong style="font-size:.85rem">Use these structures — they light up when you say them:</strong></div>
+      <div class="tchips" id="spChips"></div>
+      <div class="transcript" id="spTranscript"><span class="placeholder">Your words appear here as you speak…</span></div>
+      <div class="scen-summary" id="spSummary"></div>
+      <div class="btnrow">
+        <button class="btn mic" id="spRecBtn">🎤 Empezar</button>
+        <button class="btn" id="spResetBtn">Reiniciar</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PROGRESO ============ -->
+<section class="tab" id="tab-progreso">
+  <div class="forge-top" style="margin-top:26px">
+    <h2>Progreso · your scaffold mastery</h2>
+    <div class="stats" id="progTotals"></div>
+  </div>
+  <div class="prog-grid" id="progGrid"></div>
+  <div class="settings">
+    <label for="dialectSel">Spanish accent for the mic:</label>
+    <select id="dialectSel">
+      <option value="es-MX">México (es-MX)</option>
+      <option value="es-US">Estados Unidos (es-US)</option>
+      <option value="es-ES">España (es-ES)</option>
+      <option value="es-AR">Argentina (es-AR)</option>
+      <option value="es-CO">Colombia (es-CO)</option>
+    </select>
+    <button class="btn danger" id="resetBtn">Reset all progress</button>
+  </div>
+</section>
+
+</main>
+<footer>ANDAMIO · one file, no server, progress saved in this browser · built for a B1 learner who wants to talk</footer>
+</div>
+
+<script>
+/* =====================================================
+   DATA — scaffolds
+   forms: [yo, tú, él/ella, nosotros]  (fixed: single form)
+   engT uses tokens {v}=base {v3}=3rd-person {ving}=gerund {ved}=past
+===================================================== */
+const P_LABEL = ['yo','tú','él/ella','nosotros'];
+const REFL_PRON = ['me','te','se','nos'];
+
+const SCAFFOLDS = [
+ // --- Necesidad y obligación ---
+ {id:'tenerque', cat:'Necesidad y obligación', es:'tener que + infinitivo', en:'to have to', inf:'tener que',
+  forms:['tengo que','tienes que','tiene que','tenemos que'],
+  engT:['I have to {v}','you have to {v}','he/she has to {v}','we have to {v}'],
+  ex:{es:'Tengo que trabajar mañana.',en:'I have to work tomorrow.'},
+  tip:'Your #1 workhorse. Personal obligation: someone specific has to do it.'},
+ {id:'hayque', cat:'Necesidad y obligación', es:'hay que + infinitivo', en:'one must / you gotta', fixed:true,
+  forms:['hay que'],
+  engT:['(in general) one has to {v}'],
+  ex:{es:'Hay que practicar todos los días.',en:'You have to practice every day (in general).'},
+  tip:'Impersonal — no conjugation ever. Perfect when you mean "people in general".'},
+ {id:'necesitar', cat:'Necesidad y obligación', es:'necesitar + infinitivo', en:'to need to',
+  forms:['necesito','necesitas','necesita','necesitamos'],
+  engT:['I need to {v}','you need to {v}','he/she needs to {v}','we need to {v}'],
+  ex:{es:'Necesito descansar un poco.',en:'I need to rest a little.'},
+  tip:'Fully regular — the easiest scaffold to conjugate.'},
+ {id:'deber', cat:'Necesidad y obligación', es:'deber + infinitivo', en:'should / ought to',
+  forms:['debo','debes','debe','debemos'],
+  engT:['I should {v}','you should {v}','he/she should {v}','we should {v}'],
+  ex:{es:'Debes dormir más.',en:'You should sleep more.'},
+  tip:'Softer than tener que. «Deberías» is the extra-polite "you really should".'},
+
+ // --- Futuro ---
+ {id:'ira', cat:'Futuro', es:'ir a + infinitivo', en:'going to',
+  forms:['voy a','vas a','va a','vamos a'],
+  engT:['I\'m going to {v}','you\'re going to {v}','he/she is going to {v}','we\'re going to {v}'],
+  rx:'(voy|vas|va|vamos)\\s+a\\s+\\w+(?:ar|er|ir)\\b',
+  ex:{es:'Voy a comer con mi familia.',en:'I\'m going to eat with my family.'},
+  tip:'Replaces the entire future tense. «Vamos a…» also means "let\'s…!"'},
+ {id:'pensar', cat:'Futuro', es:'pensar + infinitivo', en:'to plan to',
+  forms:['pienso','piensas','piensa','pensamos'],
+  engT:['I plan to {v}','you plan to {v}','he/she plans to {v}','we plan to {v}'],
+  ex:{es:'Pienso viajar a México este año.',en:'I plan to travel to Mexico this year.'},
+  tip:'Sounds impressively native for stating intentions. e→ie stem change (but not in nosotros).'},
+
+ // --- Pasado reciente ---
+ {id:'acabarde', cat:'Pasado reciente', es:'acabar de + infinitivo', en:'to have just…',
+  forms:['acabo de','acabas de','acaba de','acabamos de'],
+  engT:['I just {ved}','you just {ved}','he/she just {ved}','we just {ved}'],
+  ex:{es:'Acabo de llegar a casa.',en:'I just got home.'},
+  tip:'Talk about the past with zero past-tense conjugation. Regular -ar verb.'},
+
+ // --- Deseos y gustos ---
+ {id:'querer', cat:'Deseos y gustos', es:'querer + infinitivo', en:'to want to',
+  forms:['quiero','quieres','quiere','queremos'],
+  engT:['I want to {v}','you want to {v}','he/she wants to {v}','we want to {v}'],
+  ex:{es:'Quiero aprender más español.',en:'I want to learn more Spanish.'},
+  tip:'e→ie stem change. «Quisiera» is the polite restaurant version of quiero.'},
+ {id:'gustaria', cat:'Deseos y gustos', es:'me gustaría + infinitivo', en:'would like to',
+  forms:['me gustaría','te gustaría','le gustaría','nos gustaría'],
+  engT:['I\'d like to {v}','you\'d like to {v}','he/she\'d like to {v}','we\'d like to {v}'],
+  ex:{es:'Me gustaría reservar una mesa.',en:'I\'d like to book a table.'},
+  tip:'Only «gustaría» ever — just swap the pronoun (me/te/le/nos). Instant politeness.'},
+ {id:'gusta', cat:'Deseos y gustos', es:'me gusta + infinitivo', en:'to like to',
+  forms:['me gusta','te gusta','le gusta','nos gusta'],
+  engT:['I like to {v}','you like to {v}','he/she likes to {v}','we like to {v}'],
+  ex:{es:'Me gusta cocinar en casa.',en:'I like to cook at home.'},
+  tip:'Same trick as gustaría: the verb never changes, only the pronoun.'},
+ {id:'ganasde', cat:'Deseos y gustos', es:'tener ganas de + infinitivo', en:'to feel like…',
+  forms:['tengo ganas de','tienes ganas de','tiene ganas de','tenemos ganas de'],
+  engT:['I feel like {ving}','you feel like {ving}','he/she feels like {ving}','we feel like {ving}'],
+  ex:{es:'Tengo ganas de salir esta noche.',en:'I feel like going out tonight.'},
+  tip:'Reuses the tener forms you already know. Very common in casual speech.'},
+
+ // --- Habilidad y permiso ---
+ {id:'poder', cat:'Habilidad y permiso', es:'poder + infinitivo', en:'can / to be able to', inf:'poder',
+  forms:['puedo','puedes','puede','podemos'],
+  engT:['I can {v}','you can {v}','he/she can {v}','we can {v}'],
+  ex:{es:'¿Puedes ayudar con esto?',en:'Can you help with this?'},
+  tip:'o→ue stem change. «¿Puedo…?» asks permission; «¿Puedes…?» asks a favor.'},
+ {id:'sepuede', cat:'Habilidad y permiso', es:'¿se puede + infinitivo?', en:'is it OK to…?', fixed:true, question:true,
+  forms:['se puede'],
+  engT:['can you {v} here? (is it allowed)'],
+  ex:{es:'¿Se puede pagar con tarjeta?',en:'Can you pay by card here?'},
+  tip:'The universal "is it allowed?" — never conjugates. Gold in shops and restaurants.'},
+ {id:'saber', cat:'Habilidad y permiso', es:'saber + infinitivo', en:'to know how to',
+  forms:['sé','sabes','sabe','sabemos'],
+  engT:['I know how to {v}','you know how to {v}','he/she knows how to {v}','we know how to {v}'],
+  ex:{es:'Sé cocinar bastante bien.',en:'I know how to cook pretty well.'},
+  tip:'Skills = saber, possibility = poder. «Sé nadar» — I know how to swim.'},
+
+ // --- Hábitos y cambios ---
+ {id:'soler', cat:'Hábitos y cambios', es:'soler + infinitivo', en:'to usually…',
+  forms:['suelo','sueles','suele','solemos'],
+  engT:['I usually {v}','you usually {v}','he/she usually {v3}','we usually {v}'],
+  ex:{es:'Suelo caminar en la mañana.',en:'I usually walk in the morning.'},
+  tip:'One little verb kills the need for "normalmente" + conjugation everywhere.'},
+ {id:'empezara', cat:'Hábitos y cambios', es:'empezar a + infinitivo', en:'to start…', inf:'empezar a',
+  forms:['empiezo a','empiezas a','empieza a','empezamos a'],
+  engT:['I\'m starting to {v}','you\'re starting to {v}','he/she is starting to {v}','we\'re starting to {v}'],
+  ex:{es:'Empiezo a entender más.',en:'I\'m starting to understand more.'},
+  tip:'Don\'t forget the «a». Pairs beautifully with voy a: «voy a empezar a…»'},
+ {id:'dejarde', cat:'Hábitos y cambios', es:'dejar de + infinitivo', en:'to stop…', inf:'dejar de',
+  forms:['dejo de','dejas de','deja de','dejamos de'],
+  engT:['I\'m stopping {ving}','you\'re stopping {ving}','he/she is stopping {ving}','we\'re stopping {ving}'],
+  ex:{es:'Quiero dejar de gastar tanto.',en:'I want to stop spending so much.'},
+  tip:'«Deja de…» to a friend = "quit it!" Chain it: quiero dejar de + verb.'},
+ {id:'volvera', cat:'Hábitos y cambios', es:'volver a + infinitivo', en:'to do again', inf:'volver a',
+  forms:['vuelvo a','vuelves a','vuelve a','volvemos a'],
+  engT:['I {v} again','you {v} again','he/she {v3} again','we {v} again'],
+  ex:{es:'Vuelvo a leer la lección.',en:'I read the lesson again.'},
+  tip:'Cleaner than «otra vez» every time. o→ue stem change.'},
+ {id:'intentar', cat:'Hábitos y cambios', es:'intentar + infinitivo', en:'to try to', inf:'intentar',
+  forms:['intento','intentas','intenta','intentamos'],
+  engT:['I try to {v}','you try to {v}','he/she tries to {v}','we try to {v}'],
+  ex:{es:'Intento practicar cada día.',en:'I try to practice every day.'},
+  tip:'«Tratar de + inf» means the same — you\'ll hear both.'},
+
+ // --- Ahora mismo ---
+ {id:'estar', cat:'Ahora mismo', es:'estar + gerundio', en:'to be …ing', verbForm:'ger',
+  forms:['estoy','estás','está','estamos'],
+  engT:['I\'m {ving}','you\'re {ving}','he/she is {ving}','we\'re {ving}'],
+  rx:'(estoy|estas|esta|estamos)\\s+\\w+(?:ando|iendo|yendo)\\b',
+  ex:{es:'Estoy aprendiendo español.',en:'I\'m learning Spanish.'},
+  tip:'The one non-infinitive scaffold: -ar→-ando, -er/-ir→-iendo. Worth it.'},
+];
+
+/* =====================================================
+   DATA — chained scaffolds (outer conjugated + inner infinitive)
+   Inner English: base / ger / past renderings, composed into the outer template.
+===================================================== */
+const CHAIN_INNER = {
+  tenerque:{id:'tenerque', es:'tener que', base:'have to {v}',      ger:'having to {v}'},
+  poder:   {id:'poder',    es:'poder',     base:'be able to {v}',   ger:'being able to {v}'},
+  empezara:{id:'empezara', es:'empezar a', base:'start {ving}',     ger:'starting {ving}',  past:'started {ving}'},
+  dejarde: {id:'dejarde',  es:'dejar de',  base:'stop {ving}',      ger:'stopping {ving}',  past:'stopped {ving}'},
+  volvera: {id:'volvera',  es:'volver a',  base:'{v} again',        ger:'{ving} again'},
+  intentar:{id:'intentar', es:'intentar',  base:'try to {v}',       ger:'trying to {v}'},
+};
+const CHAIN_PAIRS = [
+  ['querer','empezara'],['querer','dejarde'],['querer','volvera'],['querer','intentar'],['querer','poder'],
+  ['ira','tenerque'],['ira','poder'],['ira','empezara'],['ira','dejarde'],['ira','volvera'],['ira','intentar'],
+  ['tenerque','empezara'],['tenerque','dejarde'],['tenerque','volvera'],['tenerque','intentar'],
+  ['necesitar','empezara'],['necesitar','dejarde'],['necesitar','volvera'],
+  ['gustaria','poder'],['gustaria','empezara'],['gustaria','dejarde'],['gustaria','volvera'],
+  ['pensar','empezara'],['pensar','dejarde'],['pensar','volvera'],
+  ['acabarde','empezara'],['acabarde','dejarde'],
+  ['deber','empezara'],['deber','dejarde'],['deber','intentar'],
+  ['hayque','empezara'],['hayque','dejarde'],['hayque','volvera'],['hayque','intentar'],
+  ['ganasde','empezara'],['ganasde','volvera'],
+  ['sepuede','empezara'],['sepuede','volvera'],
+  ['intentar','dejarde'],
+];
+
+const PHRASES = [
+ {es:'creo que…', en:'I think that…'},
+ {es:'pienso que…', en:'I think / believe that…'},
+ {es:'es que…', en:'the thing is…'},
+ {es:'lo que pasa es que…', en:'what\'s happening is…'},
+ {es:'porque', en:'because'},
+ {es:'pero', en:'but'},
+ {es:'entonces', en:'so / then'},
+ {es:'por eso', en:'that\'s why'},
+ {es:'antes de + infinitivo', en:'before doing…'},
+ {es:'después de + infinitivo', en:'after doing…'},
+ {es:'para + infinitivo', en:'in order to…'},
+ {es:'primero… luego… al final…', en:'first… then… finally…'},
+ {es:'¿verdad?', en:'right? (turn anything into a question)'},
+ {es:'no sé si…', en:'I don\'t know if…'},
+ {es:'a veces / siempre / nunca', en:'sometimes / always / never'},
+ {es:'¿cómo se dice…?', en:'how do you say…? (your lifeline)'},
+];
+
+/* =====================================================
+   DATA — verbs  [es, en, extras]
+   extras: ger (Spanish gerundio if irregular), ved/ving/v3 (English overrides),
+           refl:true, comps:[[es,en],...]
+===================================================== */
+const V = (es,en,x={}) => Object.assign({es,en},x);
+const VERBS = [
+ V('hablar','speak',{ved:'spoke',comps:[['con mi amigo','with my friend'],['español','Spanish']]}),
+ V('comer','eat',{ved:'ate',comps:[['algo','something'],['en casa','at home']]}),
+ V('beber','drink',{ved:'drank',comps:[['agua','water'],['más café','more coffee']]}),
+ V('vivir','live',{comps:[['aquí','here'],['en la ciudad','in the city']]}),
+ V('trabajar','work',{comps:[['mañana','tomorrow'],['los fines de semana','on weekends']]}),
+ V('estudiar','study',{comps:[['español','Spanish'],['esta noche','tonight']]}),
+ V('aprender','learn',{comps:[['más','more'],['algo nuevo','something new']]}),
+ V('leer','read',{ger:'leyendo',ved:'read',comps:[['un libro','a book']]}),
+ V('escribir','write',{ved:'wrote',comps:[['un mensaje','a message']]}),
+ V('escuchar','listen',{comps:[['música','to music']]}),
+ V('ver','watch',{ved:'watched',comps:[['una película','a movie'],['el partido','the game']]}),
+ V('comprar','buy',{ved:'bought',comps:[['comida','food'],['un regalo','a gift']]}),
+ V('pagar','pay',{ved:'paid',comps:[['la cuenta','the bill'],['con tarjeta','with a card']]}),
+ V('vender','sell',{ved:'sold',comps:[['mi carro','my car']]}),
+ V('buscar','look for',{ved:'looked for',comps:[['trabajo','a job'],['las llaves','the keys']]}),
+ V('encontrar','find',{ved:'found',comps:[['un buen precio','a good price']]}),
+ V('ayudar','help',{comps:[['a mi hermano','my brother'],['en casa','at home']]}),
+ V('llamar','call',{comps:[['a mi mamá','my mom'],['más tarde','later']]}),
+ V('enviar','send',{ved:'sent',comps:[['el correo','the email']]}),
+ V('abrir','open',{comps:[['la ventana','the window']]}),
+ V('cerrar','close',{comps:[['la puerta','the door']]}),
+ V('terminar','finish',{comps:[['el proyecto','the project'],['temprano','early']]}),
+ V('salir','go out',{ved:'went out',comps:[['esta noche','tonight'],['con amigos','with friends']]}),
+ V('llegar','arrive',{comps:[['a tiempo','on time'],['temprano','early']]}),
+ V('viajar','travel',{ving:'traveling',ved:'traveled',comps:[['a México','to Mexico']]}),
+ V('regresar','come back',{ved:'came back',comps:[['a casa','home'],['pronto','soon']]}),
+ V('caminar','walk',{comps:[['al parque','to the park'],['un poco','a little']]}),
+ V('correr','run',{ved:'ran',ving:'running',comps:[['en la mañana','in the morning']]}),
+ V('manejar','drive',{ved:'drove',ving:'driving',comps:[['al trabajo','to work']]}),
+ V('tomar','take',{ved:'took',comps:[['un descanso','a break'],['un taxi','a taxi']]}),
+ V('traer','bring',{ger:'trayendo',ved:'brought',comps:[['la comida','the food']]}),
+ V('llevar','take',{ved:'took',comps:[['esto','this']]}),
+ V('dormir','sleep',{ger:'durmiendo',ved:'slept',comps:[['más','more'],['ocho horas','eight hours']]}),
+ V('descansar','rest',{comps:[['un poco','a little']]}),
+ V('cocinar','cook',{comps:[['la cena','dinner'],['algo rico','something tasty']]}),
+ V('limpiar','clean',{comps:[['la casa','the house'],['la cocina','the kitchen']]}),
+ V('lavar','wash',{comps:[['los platos','the dishes'],['la ropa','the clothes']]}),
+ V('preparar','prepare',{comps:[['el desayuno','breakfast']]}),
+ V('pedir','ask for',{ger:'pidiendo',ved:'asked for',comps:[['ayuda','help'],['otra cosa','something else']]}),
+ V('preguntar','ask',{comps:[['algo','something']]}),
+ V('contestar','answer',{comps:[['el teléfono','the phone']]}),
+ V('decir','say',{ger:'diciendo',ved:'said',comps:[['la verdad','the truth'],['algo','something']]}),
+ V('entender','understand',{ved:'understood',comps:[['esto','this'],['la lección','the lesson']]}),
+ V('explicar','explain',{comps:[['el problema','the problem']]}),
+ V('practicar','practice',{comps:[['español','Spanish'],['más','more']]}),
+ V('jugar','play',{comps:[['fútbol','soccer'],['con los niños','with the kids']]}),
+ V('bailar','dance'),
+ V('cantar','sing',{ved:'sang'}),
+ V('nadar','swim',{ved:'swam',ving:'swimming'}),
+ V('usar','use',{comps:[['la computadora','the computer']]}),
+ V('esperar','wait',{comps:[['aquí','here'],['un momento','a moment']]}),
+ V('visitar','visit',{comps:[['a mis abuelos','my grandparents']]}),
+ V('invitar','invite',{comps:[['a Juan','Juan']]}),
+ V('cambiar','change',{comps:[['el plan','the plan']]}),
+ V('probar','try',{ved:'tried',comps:[['la comida','the food'],['algo nuevo','something new']]}),
+ V('ganar','win',{ved:'won',comps:[['el partido','the game']]}),
+ V('gastar','spend',{ved:'spent',comps:[['menos','less']]}),
+ V('ahorrar','save',{comps:[['dinero','money']]}),
+ V('alquilar','rent',{comps:[['un carro','a car']]}),
+ V('reservar','book',{comps:[['una mesa','a table'],['un hotel','a hotel']]}),
+ V('cancelar','cancel',{comps:[['la cita','the appointment']]}),
+ V('firmar','sign',{comps:[['el contrato','the contract']]}),
+ V('descargar','download',{comps:[['la aplicación','the app']]}),
+ V('subir','upload',{comps:[['las fotos','the photos']]}),
+ V('entrar','go in',{ved:'went in',comps:[['ahora','now']]}),
+ V('cuidar','take care of',{ved:'took care of',ving:'taking care of',comps:[['al bebé','the baby']]}),
+ V('enseñar','teach',{ved:'taught',comps:[['inglés','English']]}),
+ V('mostrar','show',{ved:'showed',comps:[['las fotos','the photos']]}),
+ V('compartir','share',{comps:[['la comida','the food']]}),
+ V('mejorar','improve',{comps:[['mi español','my Spanish']]}),
+ V('olvidar','forget',{ved:'forgot',ving:'forgetting',comps:[['eso','that']]}),
+ V('recordar','remember',{comps:[['la dirección','the address']]}),
+ V('perder','lose',{ved:'lost',ving:'losing',comps:[['peso','weight']]}),
+ V('arreglar','fix',{comps:[['el carro','the car']]}),
+ V('revisar','check',{comps:[['el correo','the email']]}),
+ V('planear','plan',{ved:'planned',ving:'planning',comps:[['el viaje','the trip']]}),
+ V('organizar','organize',{comps:[['la fiesta','the party']]}),
+ V('elegir','choose',{ger:'eligiendo',ved:'chose',comps:[['un restaurante','a restaurant']]}),
+ V('decidir','decide',{comps:[['pronto','soon']]}),
+ V('desayunar','have breakfast',{ved:'had breakfast',ving:'having breakfast',v3:'has breakfast',comps:[['temprano','early']]}),
+ V('almorzar','have lunch',{ved:'had lunch',ving:'having lunch',v3:'has lunch',comps:[['juntos','together']]}),
+ V('cenar','have dinner',{ved:'had dinner',ving:'having dinner',v3:'has dinner',comps:[['a las siete','at seven']]}),
+ V('cortar','cut',{ved:'cut',ving:'cutting',comps:[['las verduras','the vegetables']]}),
+ V('hacer','do',{ger:'haciendo',ved:'did',comps:[['la tarea','the homework'],['ejercicio','exercise']]}),
+ V('ir','go',{ger:'yendo',ved:'went',comps:[['al médico','to the doctor'],['de compras','shopping']]}),
+ V('venir','come',{ger:'viniendo',ved:'came',ving:'coming',comps:[['conmigo','with me'],['mañana','tomorrow']]}),
+ V('tener','have',{ger:'teniendo',ved:'had',v3:'has',comps:[['una reunión','a meeting'],['más tiempo','more time']]}),
+ V('levantarse','get up',{refl:true,ved:'got up',ving:'getting up',comps:[['temprano','early']]}),
+ V('ducharse','take a shower',{refl:true,ved:'took a shower',ving:'taking a shower',comps:[['ahora','now']]}),
+ V('acostarse','go to bed',{refl:true,ved:'went to bed',ving:'going to bed',comps:[['temprano','early']]}),
+ V('quedarse','stay',{refl:true,ved:'stayed',comps:[['en casa','at home']]}),
+ V('sentarse','sit down',{refl:true,ved:'sat down',ving:'sitting down',comps:[['aquí','here']]}),
+ V('mudarse','move',{refl:true,ved:'moved',ving:'moving',comps:[['a otra ciudad','to another city']]}),
+];
+
+/* =====================================================
+   DATA — scenarios
+===================================================== */
+const SCENARIOS = [
+ {id:'rest', emoji:'🍽️', title:'En el restaurante',
+  desc:'You just sat down at a restaurant in Mexico City. The waiter is at your table.',
+  goals:['Say what you would like to eat and drink','Ask if you can pay by card','Ask for something extra (water, the bill…)'],
+  targets:['gustaria','querer','sepuede']},
+ {id:'planes', emoji:'📅', title:'Planes con un amigo',
+  desc:'A friend calls to make weekend plans. Propose something, explain your schedule.',
+  goals:['Say what you\'re going to do this weekend','Say what you want to do together','Mention something you have to do first'],
+  targets:['ira','querer','tenerque','poder']},
+ {id:'medico', emoji:'🏥', title:'En el médico',
+  desc:'You\'re at the doctor. Explain what\'s going on and ask what to do.',
+  goals:['Say what you need (rest, medicine…)','Say what you just did or what just happened','Ask what you should do'],
+  targets:['necesitar','acabarde','deber']},
+ {id:'entrevista', emoji:'💼', title:'Entrevista de trabajo',
+  desc:'A job interview in Spanish. Sell yourself with what you know and like.',
+  goals:['Say what you know how to do','Say what you like to do','Say what you want to learn'],
+  targets:['saber','gusta','querer']},
+ {id:'compras', emoji:'🛍️', title:'De compras',
+  desc:'You\'re in a store looking for a gift. Talk to the shop assistant.',
+  goals:['Say what you need to buy','Say what you\'d like to see','Ask if you can try it / pay by card'],
+  targets:['necesitar','gustaria','sepuede']},
+ {id:'rutina', emoji:'☀️', title:'Tu rutina diaria',
+  desc:'Someone asks about your typical day. Walk them through it.',
+  goals:['Say 3 things you usually do','Say something you like to do','Say something you have to do every day'],
+  targets:['soler','gusta','tenerque']},
+ {id:'telefono', emoji:'📱', title:'Ahora mismo, por teléfono',
+  desc:'A friend calls: "¿Qué haces?" Describe your moment.',
+  goals:['Say what you\'re doing right now','Say what you just did','Say what you\'re going to do after'],
+  targets:['estar','acabarde','ira']},
+ {id:'propositos', emoji:'💪', title:'Nuevos propósitos',
+  desc:'New year, new you. Tell a friend about your resolutions.',
+  goals:['Say a habit you\'re going to start','Say a habit you want to stop','Say something you\'re trying to do'],
+  targets:['ira','empezara','dejarde','intentar']},
+ {id:'vecino', emoji:'🔧', title:'Pedir ayuda a un vecino',
+  desc:'Something broke at home. Knock on your neighbor\'s door.',
+  goals:['Ask if they can help you','Say what you need to fix','Say what one has to do (hay que…)'],
+  targets:['poder','necesitar','hayque']},
+ {id:'viaje', emoji:'✈️', title:'El próximo viaje',
+  desc:'You\'re planning a trip. Tell a friend all about it.',
+  goals:['Say where you\'re going to travel','Say what you plan to do there','Say what you\'d like to try'],
+  targets:['ira','pensar','gustaria']},
+ {id:'hotel', emoji:'🏨', title:'En el hotel',
+  desc:'You arrive at the front desk of your hotel.',
+  goals:['Say you\'d like to check in / book something','Ask if you can leave your bags','Ask about breakfast (¿se puede…? ¿hay que…?)'],
+  targets:['gustaria','sepuede','poder']},
+ {id:'espanol', emoji:'📚', title:'Tu camino con el español',
+  desc:'Someone asks how your Spanish is going. Reflect out loud.',
+  goals:['Say what you usually do to practice','Say what you\'re trying to improve','Say what you should do more'],
+  targets:['soler','intentar','deber','estar']},
+];
+
+/* =====================================================
+   Language helpers
+===================================================== */
+function esGer(v){
+  if(v.ger) return v.ger;
+  const inf = v.refl ? v.es.slice(0,-2) : v.es;
+  if(inf.endsWith('ar')) return inf.slice(0,-2)+'ando';
+  return inf.slice(0,-2)+'iendo';
+}
+function reflInf(v,pIdx){ // levantarse -> levantarme
+  return v.es.slice(0,-2) + REFL_PRON[pIdx];
+}
+function firstWordMap(phrase, fn){
+  const parts = phrase.split(' ');
+  parts[0] = fn(parts[0]);
+  return parts.join(' ');
+}
+function en3s(v){
+  if(v.v3) return v.v3;
+  return firstWordMap(v.en, w=>{
+    if(/(o|ch|sh|s|x|z)$/.test(w)) return w+'es';
+    if(/[^aeiou]y$/.test(w)) return w.slice(0,-1)+'ies';
+    return w+'s';
+  });
+}
+function enPast(v){
+  if(v.ved) return v.ved;
+  return firstWordMap(v.en, w=>{
+    if(w.endsWith('e')) return w+'d';
+    if(/[^aeiou]y$/.test(w)) return w.slice(0,-1)+'ied';
+    return w+'ed';
+  });
+}
+function enGer(v){
+  if(v.ving) return v.ving;
+  return firstWordMap(v.en, w=>{
+    if(w.endsWith('e') && !w.endsWith('ee')) return w.slice(0,-1)+'ing';
+    return w+'ing';
+  });
+}
+function normalize(s){
+  return s.toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g,'')
+    .replace(/[¿?¡!.,;:"'()]/g,'')
+    .replace(/\s+/g,' ').trim();
+}
+
+/* Build one drill item */
+function buildItem(sc, pIdx, verb, comp){
+  const form = sc.fixed ? sc.forms[0] : sc.forms[pIdx];
+  let verbEs, answers=[];
+  if(sc.verbForm==='ger'){
+    const g = esGer(verb);
+    if(verb.refl){
+      const pron = sc.fixed ? 'se' : REFL_PRON[pIdx];
+      answers.push(`${pron} ${form} ${g}${comp?' '+comp[0]:''}`);
+      answers.push(`${form} ${g.replace(/o$/,'ándo'+pron).replace(/e$/,'iéndo'+pron)}${comp?' '+comp[0]:''}`);
+      verbEs = g;
+    } else {
+      verbEs = g;
+    }
+  } else {
+    verbEs = verb.refl ? (sc.fixed ? verb.es : reflInf(verb,pIdx)) : verb.es;
+  }
+  let es = `${form} ${verbEs}${comp?' '+comp[0]:''}`;
+  if(sc.question) es = `¿${es.charAt(0)}${es.slice(1)}?`;
+  if(!answers.length) answers.push(es);
+
+  const tpl = sc.fixed ? sc.engT[0] : sc.engT[pIdx];
+  let en = tpl
+    .replace('{v3}', en3s(verb))
+    .replace('{ved}', enPast(verb))
+    .replace('{ving}', enGer(verb))
+    .replace('{v}', verb.en);
+  en = addCompEn(en, comp);
+  if(sc.question && sc.id==='sepuede'){
+    en = `Can you ${verb.en}${comp?' '+comp[1]:''}? (asking if it\'s allowed)`;
+  }
+  return {sc, pIdx, es, en, answers, person: sc.fixed ? '—' : P_LABEL[pIdx]};
+}
+
+/* Build one chained drill item: outer conjugated + inner infinitive + main verb */
+function innerEng(inner, verb, mode){
+  const tpl = inner[mode] || inner.base;
+  return tpl.replace('{ving}', enGer(verb)).replace('{v}', verb.en);
+}
+function buildChainItem(outer, inner, pIdx, verb, comp){
+  const form = outer.fixed ? outer.forms[0] : outer.forms[pIdx];
+  const verbEs = verb.refl ? (outer.fixed ? verb.es : reflInf(verb,pIdx)) : verb.es;
+  let es = `${form} ${inner.es} ${verbEs}${comp?' '+comp[0]:''}`;
+  if(outer.question) es = `¿${es}?`;
+  const tpl = outer.fixed ? outer.engT[0] : outer.engT[pIdx];
+  let en;
+  if(tpl.includes('{ved}'))       en = tpl.replace('{ved}',  innerEng(inner, verb, 'past'));
+  else if(tpl.includes('{ving}')) en = tpl.replace('{ving}', innerEng(inner, verb, 'ger'));
+  else                            en = tpl.replace('{v}',    innerEng(inner, verb, 'base'));
+  en = addCompEn(en, comp);
+  if(outer.id==='sepuede') en = `Can you ${addCompEn(innerEng(inner, verb, 'base'), comp)}? (asking if it's allowed)`;
+  return {sc:outer, innerSc:SCAFFOLDS.find(s=>s.id===inner.id), pIdx, es, en, answers:[es],
+          person: outer.fixed ? '—' : P_LABEL[pIdx]};
+}
+
+/* Complement compatibility rules:
+   - future time words never pair with past/habitual/progressive structures
+   - "mi/mis" complements only with yo & nosotros, never with impersonal structures */
+const FUTURE_COMPS = new Set(['mañana','esta noche','pronto','más tarde']);
+const NO_FUTURE = new Set(['acabarde','soler','dejarde','estar']);
+const POSS = /\bmis?\b/;
+function compsFor(sc, verb, pIdx, inner){
+  let cs = verb.comps || [];
+  if(NO_FUTURE.has(sc.id) || (inner && NO_FUTURE.has(inner.id))) cs = cs.filter(c=>!FUTURE_COMPS.has(c[0]));
+  if(sc.fixed || pIdx===1 || pIdx===2) cs = cs.filter(c=>!POSS.test(c[0]));
+  return cs;
+}
+/* English: slot the complement before a trailing "again" ("read a book again") */
+function addCompEn(en, comp){
+  if(!comp) return en;
+  return en.endsWith(' again') ? en.slice(0,-6) + ' ' + comp[1] + ' again' : en + ' ' + comp[1];
+}
+
+/* =====================================================
+   State & storage
+===================================================== */
+const store = {
+  load(){ try{ return JSON.parse(localStorage.getItem('andamio')||'{}'); }catch(e){ return {}; } },
+  save(d){ localStorage.setItem('andamio', JSON.stringify(d)); }
+};
+let state = store.load();
+state.srs = state.srs || {};      // id -> {box, due, seen, right}
+state.dialect = state.dialect || 'es-MX';
+state.filter = Array.isArray(state.filter) ? state.filter.filter(id=>SCAFFOLDS.some(s=>s.id===id)) : []; // [] = all
+state.chains = state.chains !== false; // chained scaffolds on by default
+state.today = state.today || {date:'', n:0};
+const todayStr = new Date().toISOString().slice(0,10);
+if(state.today.date !== todayStr){ state.today = {date:todayStr, n:0}; }
+let streak = 0;
+
+const BOX_DAYS = [0, 1, 3, 7, 14];
+function srsFor(id){
+  if(!state.srs[id]) state.srs[id] = {box:0, due:0, seen:0, right:0};
+  return state.srs[id];
+}
+function activeScaffolds(){
+  return state.filter.length ? SCAFFOLDS.filter(s=>state.filter.includes(s.id)) : SCAFFOLDS;
+}
+function dueScaffolds(){
+  const now = Date.now();
+  return activeScaffolds().filter(s => srsFor(s.id).due <= now);
+}
+function gradeSrs(id, ok, silent){
+  const s = srsFor(id);
+  s.seen++;
+  if(ok){ s.right++; s.box = Math.min(4, s.box+1); }
+  else { s.box = Math.max(0, s.box-1); }
+  s.due = Date.now() + BOX_DAYS[s.box]*24*3600*1000;
+  if(!silent){
+    state.today.n++;
+    streak = ok ? streak+1 : 0;
+  }
+  store.save(state);
+  updateForgeStats();
+}
+function gradeCurrent(ok){
+  gradeSrs(current.sc.id, ok);
+  if(current.innerSc) gradeSrs(current.innerSc.id, ok, true); // chain: inner gets SRS credit too
+}
+
+/* =====================================================
+   Speech recognition
+===================================================== */
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+if(!SR) document.getElementById('nomicNote').style.display='block';
+
+/* On file:// pages the browser re-asks mic permission on EVERY recognition — hard-coded
+   browser policy, nothing a page can do. Serve from http://localhost (Start Andamio.bat)
+   and "Allow" sticks permanently. Warn if opened as a plain file: */
+if(SR && location.protocol === 'file:'){
+  const n = document.getElementById('nomicNote');
+  n.innerHTML = '🎤 Opened as a local file — the browser will ask for mic permission <b>every time</b> (browser policy for file:// pages). Double-click <b>Start Andamio.bat</b> instead: you\'ll be asked once, ever.';
+  n.style.display = 'block';
+}
+function ensureMic(){ return Promise.resolve(); }
+
+function makeRecognizer(opts){
+  if(!SR) return null;
+  const r = new SR();
+  r.lang = state.dialect;
+  r.interimResults = true;
+  r.continuous = !!opts.continuous;
+  r.maxAlternatives = 3;
+  return r;
+}
+
+/* =====================================================
+   RENDER — cheatsheet
+===================================================== */
+function renderCheatsheet(){
+  const cats = [...new Set(SCAFFOLDS.map(s=>s.cat))];
+  const root = document.getElementById('cheatsheet');
+  root.innerHTML = cats.map(cat=>{
+    const cards = SCAFFOLDS.filter(s=>s.cat===cat).map(s=>`
+      <div class="card">
+        <div class="head"><h3>${s.es}</h3><span class="gloss">${s.en}</span></div>
+        <div class="forms">${s.forms.map((f,i)=>`<span title="${s.fixed?'never changes':P_LABEL[i]}">${f}</span>`).join('')}</div>
+        <div class="ex">${s.ex.es}<div class="en">${s.ex.en}</div></div>
+        <div class="tip">💡 ${s.tip}</div>
+        ${s.inf?`<div class="chainnote">⛓ chains after another structure: «quiero <b>${s.inf}</b> + verbo»</div>`:''}
+        <button class="practica" data-id="${s.id}">🎤 Practicar esta →</button>
+      </div>`).join('');
+    return `<div class="cat"><h2>${cat}</h2><div class="rule"></div></div><div class="cards">${cards}</div>`;
+  }).join('');
+  document.getElementById('phrases').innerHTML = PHRASES.map(p=>
+    `<div class="phrase"><b>${p.es}</b><span class="en">${p.en}</span></div>`).join('');
+  root.querySelectorAll('.practica').forEach(b=>b.addEventListener('click',()=>{
+    setFilter([b.dataset.id]);
+    goTab('forja');
+    window.scrollTo({top:0});
+  }));
+}
+
+/* =====================================================
+   Sentence machine (hero)
+===================================================== */
+function spinMachine(){
+  const sc = SCAFFOLDS[Math.floor(Math.random()*SCAFFOLDS.length)];
+  const pIdx = sc.fixed ? 0 : Math.floor(Math.random()*4);
+  let verb;
+  do { verb = VERBS[Math.floor(Math.random()*VERBS.length)]; }
+  while(sc.verbForm==='ger' && verb.refl);
+  const comps = compsFor(sc, verb, pIdx);
+  const comp = comps.length ? comps[Math.floor(Math.random()*comps.length)] : null;
+  const item = buildItem(sc, pIdx, verb, comp);
+
+  const form = sc.fixed ? sc.forms[0] : sc.forms[pIdx];
+  const rest = item.es.replace(/^[¿]/,'').replace(/[?]$/,'');
+  const verbPart = rest.slice(form.length).trim();
+  const vWord = comp ? verbPart.slice(0, verbPart.length - comp[0].length).trim() : verbPart;
+
+  setSlot('m1', form); setSlot('m2', vWord); setSlot('m3', comp ? comp[0] : '—');
+  document.getElementById('mEng').textContent = '= ' + item.en;
+}
+function setSlot(id, text){
+  const el = document.getElementById(id);
+  const slot = el.parentElement;
+  slot.classList.remove('flip'); void slot.offsetWidth;
+  el.textContent = text; slot.classList.add('flip');
+}
+function countPrompts(){
+  let total = 0;
+  for(const sc of SCAFFOLDS){
+    const ps = sc.fixed ? [0] : [0,1,2,3];
+    for(const p of ps) for(const v of VERBS){
+      if(sc.verbForm==='ger' && v.refl) continue;
+      total += compsFor(sc, v, p).length || 1;
+    }
+  }
+  for(const [oId,iId] of CHAIN_PAIRS){
+    const outer = SCAFFOLDS.find(s=>s.id===oId), inner = CHAIN_INNER[iId];
+    const ps = outer.fixed ? [0] : [0,1,2,3];
+    for(const p of ps) for(const v of VERBS){
+      if((iId==='tenerque'&&v.es==='tener')||(iId==='volvera'&&v.es==='regresar')) continue;
+      total += compsFor(outer, v, p, inner).length || 1;
+    }
+  }
+  return total;
+}
+function initMachine(){
+  document.getElementById('comboCount').textContent = countPrompts().toLocaleString('en-US');
+  const pieces = SCAFFOLDS.reduce((a,s)=>a+s.forms.length,0) + VERBS.length;
+  document.getElementById('pieceCount').textContent = '~'+pieces;
+  spinMachine();
+  if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+    setInterval(spinMachine, 3200);
+  }
+}
+
+/* =====================================================
+   FORGE
+===================================================== */
+let current = null, revealed = false, hinted = false, forgeRec = null, listening = false;
+
+function pickChain(){
+  const activeIds = new Set(activeScaffolds().map(s=>s.id));
+  const pairs = CHAIN_PAIRS.filter(p=>activeIds.has(p[0]));
+  if(!pairs.length) return null;
+  const [oId,iId] = pairs[Math.floor(Math.random()*pairs.length)];
+  const outer = SCAFFOLDS.find(s=>s.id===oId);
+  const inner = CHAIN_INNER[iId];
+  const pIdx = outer.fixed ? 0 : Math.floor(Math.random()*4);
+  let verb;
+  do { verb = VERBS[Math.floor(Math.random()*VERBS.length)]; }
+  while((iId==='tenerque' && verb.es==='tener') || (iId==='volvera' && verb.es==='regresar'));
+  const comps = compsFor(outer, verb, pIdx, inner);
+  const comp = comps.length ? comps[Math.floor(Math.random()*comps.length)] : null;
+  return buildChainItem(outer, inner, pIdx, verb, comp);
+}
+function pickItem(){
+  if(state.chains && Math.random() < 1/3){
+    const chain = pickChain();
+    if(chain) return chain;
+  }
+  const due = dueScaffolds();
+  let pool = due.length ? due : activeScaffolds();
+  // weight toward lower boxes
+  const weighted = [];
+  pool.forEach(s=>{ const w = 5 - srsFor(s.id).box; for(let i=0;i<w;i++) weighted.push(s); });
+  const sc = weighted[Math.floor(Math.random()*weighted.length)];
+  const pIdx = sc.fixed ? 0 : Math.floor(Math.random()*4);
+  let verb;
+  do { verb = VERBS[Math.floor(Math.random()*VERBS.length)]; }
+  while(sc.verbForm==='ger' && verb.refl);
+  const comps = compsFor(sc, verb, pIdx);
+  const comp = comps.length ? comps[Math.floor(Math.random()*comps.length)] : null;
+  return buildItem(sc, pIdx, verb, comp);
+}
+
+function showItem(){
+  current = pickItem(); revealed = false; hinted = false;
+  document.getElementById('dKicker').textContent = current.innerSc ? 'DILO EN ESPAÑOL → ⛓ CADENA' : 'DILO EN ESPAÑOL →';
+  document.getElementById('dPrompt').textContent = '“' + current.en + '”';
+  const hint = document.getElementById('dHint');
+  hint.textContent = '?'; hint.className = 'chip ghost';
+  const ans = document.getElementById('dAnswer');
+  ans.textContent = current.es; ans.classList.add('hidden-a');
+  document.getElementById('dHeard').innerHTML = '';
+  document.getElementById('dVerdict').textContent = ''; document.getElementById('dVerdict').className = 'verdict';
+  setGrade(false);
+  updateForgeStats();
+}
+function setGrade(enabled){
+  document.getElementById('gotBtn').disabled = !enabled;
+  document.getElementById('missBtn').disabled = !enabled;
+}
+function reveal(){
+  revealed = true;
+  document.getElementById('dAnswer').classList.remove('hidden-a');
+  setGrade(true);
+}
+function showHint(){
+  hinted = true;
+  const hint = document.getElementById('dHint');
+  const base = current.innerSc
+    ? `${current.sc.es.split(' + ')[0]} ⛓ ${CHAIN_INNER[current.innerSc.id].es} + verbo`
+    : current.sc.es;
+  hint.textContent = base + (current.sc.fixed ? '' : '  ·  ' + current.person);
+  hint.className = 'chip';
+}
+function scoreAgainst(said){
+  const saidN = normalize(said);
+  let best = 0, bestAns = current.answers[0];
+  for(const ans of current.answers){
+    let ansN = normalize(ans);
+    // pronoun-optional: also try with subject pronouns stripped from what was said
+    const saidStripped = saidN.replace(/^(yo|tu|el|ella|nosotros|nosotras)\s+/,'');
+    const a = tokenScore(saidN, ansN);
+    const b = tokenScore(saidStripped, ansN);
+    const s = Math.max(a,b);
+    if(s > best){ best = s; bestAns = ans; }
+  }
+  return {score:best, target:bestAns};
+}
+function tokenScore(said, ans){
+  const st = said.split(' ').filter(Boolean);
+  const at = ans.split(' ').filter(Boolean);
+  if(!at.length) return 0;
+  let hit = 0;
+  const pool = [...st];
+  for(const t of at){
+    const i = pool.indexOf(t);
+    if(i>=0){ hit++; pool.splice(i,1); }
+  }
+  return hit/at.length;
+}
+function renderHeard(said, res){
+  const el = document.getElementById('dHeard');
+  const targetTokens = normalize(res.target).split(' ');
+  const html = normalize(said).split(' ').map(t=>
+    targetTokens.includes(t) ? `<span class="good">${t}</span>` : `<span class="bad">${t}</span>`
+  ).join(' ');
+  el.innerHTML = `<span class="lbl">heard:</span> ${html}`;
+}
+function startForgeMic(){
+  if(!SR || listening) { if(listening) stopForgeMic(); return; }
+  ensureMic().then(beginForgeMic);
+}
+function beginForgeMic(){
+  if(listening) return;
+  forgeRec = makeRecognizer({continuous:false});
+  const btn = document.getElementById('micBtn');
+  listening = true; btn.classList.add('listening'); btn.textContent = '🎤 Escuchando…';
+  let final = '';
+  forgeRec.onresult = e=>{
+    let interim = '';
+    for(let i=e.resultIndex;i<e.results.length;i++){
+      if(e.results[i].isFinal) final += e.results[i][0].transcript + ' ';
+      else interim += e.results[i][0].transcript;
+    }
+    const said = (final || interim).trim();
+    if(said) document.getElementById('dHeard').innerHTML = `<span class="lbl">heard:</span> ${said}`;
+  };
+  forgeRec.onend = ()=>{
+    listening = false; btn.classList.remove('listening'); btn.textContent = '🎤 Habla';
+    const said = final.trim();
+    if(!said) return;
+    const res = scoreAgainst(said);
+    renderHeard(said, res);
+    const v = document.getElementById('dVerdict');
+    reveal();
+    if(res.score >= 0.8){
+      v.textContent = '¡Muy bien! 🎉'; v.className = 'verdict ok';
+      gradeCurrent(true);
+      setGrade(false);
+      setTimeout(showItem, 1600);
+    } else if(res.score >= 0.5){
+      v.textContent = 'Casi — compare and grade yourself'; v.className = 'verdict no';
+    } else {
+      v.textContent = 'Not quite — try the mic again or grade yourself'; v.className = 'verdict no';
+    }
+  };
+  forgeRec.onerror = ()=>{ listening=false; btn.classList.remove('listening'); btn.textContent='🎤 Habla'; };
+  forgeRec.start();
+}
+function stopForgeMic(){ if(forgeRec){ try{forgeRec.stop();}catch(e){} } }
+
+function updateForgeStats(){
+  document.getElementById('streak').textContent = streak;
+  document.getElementById('todayCount').textContent = state.today.n;
+  document.getElementById('dueCount').textContent = dueScaffolds().length;
+}
+
+/* ---- structure filter ---- */
+function shortName(sc){ return sc.es.replace(' + infinitivo','').replace(' + gerundio',' + -ndo').replace('¿','').replace('?',''); }
+function setFilter(ids){
+  state.filter = ids;
+  store.save(state);
+  renderFilter();
+  showItem();
+}
+function toggleFilterId(id){
+  const f = state.filter.slice();
+  const i = f.indexOf(id);
+  if(i>=0) f.splice(i,1); else f.push(id);
+  if(f.length===SCAFFOLDS.length) f.length = 0; // all selected = no filter
+  setFilter(f);
+}
+function renderFilter(){
+  const chips = document.getElementById('fChips');
+  const allOn = !state.filter.length;
+  chips.innerHTML =
+    `<button class="fchip all" data-id="__all">todas</button>` +
+    `<button class="fchip chains ${state.chains?'on':''}" data-id="__chains" title="mix in two-structure combos like «voy a tener que trabajar»">⛓ cadenas</button>` +
+    SCAFFOLDS.map(s=>`<button class="fchip ${allOn||state.filter.includes(s.id)?'on':''}" data-id="${s.id}">${shortName(s)}</button>`).join('');
+  chips.querySelectorAll('.fchip').forEach(b=>b.addEventListener('click',()=>{
+    if(b.dataset.id==='__all') setFilter([]);
+    else if(b.dataset.id==='__chains'){ state.chains = !state.chains; setFilter(state.filter); }
+    else toggleFilterId(b.dataset.id);
+  }));
+  const label = document.getElementById('fLabel');
+  const chainTag = state.chains ? ' <em>⛓</em>' : '';
+  if(allOn) label.innerHTML = 'Practicando: <em>todas las estructuras</em>' + chainTag;
+  else {
+    const names = state.filter.map(id=>shortName(SCAFFOLDS.find(s=>s.id===id)));
+    const shown = names.length<=3 ? names.join(', ') : `${names.slice(0,2).join(', ')} +${names.length-2} más`;
+    label.innerHTML = `Practicando: <em>${shown}</em>` + chainTag;
+  }
+}
+function goTab(name){
+  document.querySelector(`nav button[data-tab="${name}"]`).click();
+}
+
+/* =====================================================
+   SCENARIOS
+===================================================== */
+let scen = null, scenRec = null, scenTimerId = null, scenLeft = 60, scenDur = 60, scenRunning = false;
+let scenFinal = '';
+
+function scPattern(sc){
+  if(sc.rx) return new RegExp(sc.rx,'i');
+  const forms = sc.forms.concat(sc.inf ? [sc.inf] : []); // chain form counts too
+  const alts = forms.map(f=>normalize(f).replace(/ /g,'\\s+')).join('|');
+  return new RegExp('\\b(?:'+alts+')\\b','i');
+}
+function renderScenarios(){
+  document.getElementById('scenGrid').innerHTML = SCENARIOS.map(s=>`
+    <button class="scen-card" data-id="${s.id}">
+      <div class="emoji">${s.emoji}</div>
+      <h3>${s.title}</h3>
+      <p>${s.desc}</p>
+      <div class="targets">${s.targets.map(t=>{
+        const sc = SCAFFOLDS.find(x=>x.id===t);
+        return `<span>${sc.es.split(' + ')[0]}</span>`;
+      }).join('')}</div>
+    </button>`).join('');
+  document.querySelectorAll('.scen-card').forEach(b=>b.addEventListener('click',()=>openScenario(b.dataset.id)));
+}
+function openScenario(id){
+  scen = SCENARIOS.find(s=>s.id===id);
+  document.getElementById('scenList').style.display='none';
+  document.getElementById('scenPlay').style.display='block';
+  document.getElementById('spTitle').textContent = scen.emoji + ' ' + scen.title;
+  document.getElementById('spDesc').textContent = scen.desc;
+  document.getElementById('spGoals').innerHTML = scen.goals.map(g=>`<li>${g}</li>`).join('');
+  document.getElementById('spChips').innerHTML = scen.targets.map(t=>{
+    const sc = SCAFFOLDS.find(x=>x.id===t);
+    return `<span class="tchip" data-id="${t}">${sc.es}</span>`;
+  }).join('');
+  resetScenario();
+}
+function resetScenario(){
+  stopScenRec();
+  clearInterval(scenTimerId); scenRunning = false; scenFinal = '';
+  scenLeft = scenDur;
+  paintTimer();
+  document.getElementById('spTranscript').innerHTML = '<span class="placeholder">Your words appear here as you speak…</span>';
+  document.getElementById('spSummary').textContent = '';
+  document.querySelectorAll('#spChips .tchip').forEach(c=>c.classList.remove('hit'));
+  document.getElementById('spRecBtn').textContent = '🎤 Empezar';
+  document.getElementById('spRecBtn').classList.remove('listening');
+}
+function paintTimer(){
+  const m = Math.floor(scenLeft/60), s = scenLeft%60;
+  const t = document.getElementById('spTimer');
+  t.textContent = `${m}:${String(s).padStart(2,'0')}`;
+  t.className = 'timer' + (scenLeft<=10 ? ' warn':'');
+}
+function toggleScenario(){
+  if(scenRunning){ finishScenario(); return; }
+  scenRunning = true; scenLeft = scenDur; scenFinal=''; paintTimer();
+  document.getElementById('spSummary').textContent = '';
+  document.querySelectorAll('#spChips .tchip').forEach(c=>c.classList.remove('hit'));
+  const btn = document.getElementById('spRecBtn');
+  btn.textContent = '⏹ Terminar'; btn.classList.add('listening');
+  scenTimerId = setInterval(()=>{
+    scenLeft--;
+    paintTimer();
+    if(scenLeft<=0) finishScenario();
+  },1000);
+  if(SR) ensureMic().then(startScenRec);
+  else document.getElementById('spTranscript').innerHTML = '<span class="placeholder">(No speech recognition — talk out loud and watch the clock!)</span>';
+}
+function startScenRec(){
+  scenRec = makeRecognizer({continuous:true});
+  scenRec.onresult = e=>{
+    let interim='';
+    for(let i=e.resultIndex;i<e.results.length;i++){
+      if(e.results[i].isFinal) scenFinal += e.results[i][0].transcript + ' ';
+      else interim += e.results[i][0].transcript;
+    }
+    const box = document.getElementById('spTranscript');
+    box.innerHTML = scenFinal + (interim?`<span class="interim">${interim}</span>`:'') || '<span class="placeholder">…</span>';
+    checkTargets(scenFinal + ' ' + interim);
+  };
+  scenRec.onend = ()=>{ if(scenRunning){ try{scenRec.start();}catch(e){} } };
+  try{ scenRec.start(); }catch(e){}
+}
+function stopScenRec(){ if(scenRec){ scenRec.onend=null; try{scenRec.stop();}catch(e){} scenRec=null; } }
+function checkTargets(text){
+  const norm = normalize(text);
+  scen.targets.forEach(t=>{
+    const sc = SCAFFOLDS.find(x=>x.id===t);
+    if(scPattern(sc).test(norm)){
+      document.querySelector(`#spChips .tchip[data-id="${t}"]`)?.classList.add('hit');
+    }
+  });
+}
+function finishScenario(){
+  scenRunning = false;
+  clearInterval(scenTimerId);
+  stopScenRec();
+  const btn = document.getElementById('spRecBtn');
+  btn.textContent = '🎤 Otra vez'; btn.classList.remove('listening');
+  const hits = document.querySelectorAll('#spChips .tchip.hit').length;
+  const total = scen.targets.length;
+  const words = scenFinal.trim() ? scenFinal.trim().split(/\s+/).length : 0;
+  let msg;
+  if(!SR) msg = '¡Hecho! Self-check: did you use all the target structures?';
+  else if(hits===total) msg = `🏆 ¡Perfecto! All ${total} structures used · ~${words} words spoken.`;
+  else msg = `${hits}/${total} structures used · ~${words} words. The gray chips are your homework — go again!`;
+  document.getElementById('spSummary').textContent = msg;
+}
+
+/* =====================================================
+   PROGRESS
+===================================================== */
+function renderProgress(){
+  const grid = document.getElementById('progGrid');
+  grid.innerHTML = SCAFFOLDS.map(s=>{
+    const st = srsFor(s.id);
+    const acc = st.seen ? Math.round(100*st.right/st.seen) : null;
+    const dots = [0,1,2,3,4].map(i=>`<i class="${i<st.box?'on':''}"></i>`).join('');
+    return `<div class="prog-card">
+      <h4>${s.es}</h4>
+      <div class="dots">${dots}</div>
+      <div class="acc">${st.seen ? `${acc}% correct · ${st.seen} reps` : 'not practiced yet'}</div>
+    </div>`;
+  }).join('');
+  const totalReps = SCAFFOLDS.reduce((a,s)=>a+srsFor(s.id).seen,0);
+  const mastered = SCAFFOLDS.filter(s=>srsFor(s.id).box>=4).length;
+  document.getElementById('progTotals').textContent = `${totalReps} total reps · ${mastered}/${SCAFFOLDS.length} mastered`;
+}
+
+/* =====================================================
+   Tabs & wiring
+===================================================== */
+document.querySelectorAll('nav button').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    document.querySelectorAll('main .tab').forEach(t=>t.classList.remove('show'));
+    document.getElementById('tab-'+b.dataset.tab).classList.add('show');
+    if(b.dataset.tab==='progreso') renderProgress();
+    if(b.dataset.tab==='forja' && !current) showItem();
+  });
+});
+
+document.getElementById('fToggle').addEventListener('click',()=>{
+  const c = document.getElementById('fChips');
+  const open = c.style.display !== 'none';
+  c.style.display = open ? 'none' : 'flex';
+  document.getElementById('fToggle').textContent = open ? 'choose structures' : 'hide';
+});
+document.getElementById('revealBtn').addEventListener('click',()=>{ if(!revealed) reveal(); });
+document.getElementById('hintBtn').addEventListener('click',showHint);
+document.getElementById('nextBtn').addEventListener('click',showItem);
+document.getElementById('micBtn').addEventListener('click',startForgeMic);
+document.getElementById('gotBtn').addEventListener('click',()=>{
+  gradeCurrent(true);
+  document.getElementById('dVerdict').textContent='¡Bien! 🎉';
+  document.getElementById('dVerdict').className='verdict ok';
+  setGrade(false); setTimeout(showItem,900);
+});
+document.getElementById('missBtn').addEventListener('click',()=>{
+  gradeCurrent(false);
+  document.getElementById('dVerdict').textContent='Noted — this one will come back soon.';
+  document.getElementById('dVerdict').className='verdict no';
+  setGrade(false); setTimeout(showItem,1200);
+});
+document.addEventListener('keydown',e=>{
+  if(!document.getElementById('tab-forja').classList.contains('show')) return;
+  if(e.target.tagName==='SELECT'||e.target.tagName==='INPUT') return;
+  if(e.code==='Space'){ e.preventDefault(); startForgeMic(); }
+  else if(e.key==='Enter'){ e.preventDefault(); revealed ? showItem() : reveal(); }
+  else if(e.key==='1' && !document.getElementById('gotBtn').disabled) document.getElementById('gotBtn').click();
+  else if(e.key==='2' && !document.getElementById('missBtn').disabled) document.getElementById('missBtn').click();
+});
+
+document.getElementById('scenBack').addEventListener('click',()=>{
+  resetScenario();
+  document.getElementById('scenPlay').style.display='none';
+  document.getElementById('scenList').style.display='block';
+});
+document.getElementById('spRecBtn').addEventListener('click',toggleScenario);
+document.getElementById('spResetBtn').addEventListener('click',resetScenario);
+document.querySelectorAll('#timeOpts button').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('#timeOpts button').forEach(x=>x.classList.remove('sel'));
+    b.classList.add('sel');
+    scenDur = +b.dataset.t;
+    if(!scenRunning){ scenLeft = scenDur; paintTimer(); }
+  });
+});
+
+const dialectSel = document.getElementById('dialectSel');
+dialectSel.value = state.dialect;
+dialectSel.addEventListener('change',()=>{ state.dialect = dialectSel.value; store.save(state); });
+document.getElementById('resetBtn').addEventListener('click',()=>{
+  if(confirm('Reset all progress? This clears your practice history.')){
+    state.srs = {}; state.today = {date:todayStr,n:0}; streak=0;
+    store.save(state); renderProgress(); updateForgeStats();
+  }
+});
+
+/* init */
+renderCheatsheet();
+initMachine();
+renderScenarios();
+renderFilter();
+updateForgeStats();
+showItem();
+</script>
+</body>
+</html>
