@@ -153,6 +153,20 @@ main section.tab.show{display:block;animation:fadein .25s ease}
 .verdict.no{color:var(--teja)}
 .keyhint{font-family:'Space Mono',monospace;font-size:.7rem;color:#999;margin-top:14px}
 
+/* ---------- armar (tile) mode ---------- */
+.modeswitch{display:flex;border:2px solid var(--tinta);border-radius:999px;overflow:hidden;background:#fff}
+.mbtn{border:none;background:#fff;padding:8px 16px;font-weight:700;font-family:inherit;font-size:.85rem;cursor:pointer}
+.mbtn.active{background:var(--tinta);color:var(--sol)}
+.assembly{min-height:58px;border:2px dashed var(--tinta);border-radius:10px;padding:10px;display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 10px;align-items:center}
+.assembly .ph{color:#aaa;font-size:.85rem;font-style:italic}
+.tilebank{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 4px;min-height:46px}
+.tile{border:2px solid var(--tinta);border-radius:10px;background:var(--sol);padding:8px 14px;font-weight:700;font-size:1rem;box-shadow:2px 2px 0 var(--tinta);cursor:pointer;font-family:inherit}
+.tile.used{opacity:.22;box-shadow:none;cursor:default}
+.tile.placed{background:#fff}
+.tile.okt{background:var(--verde);color:#fff;border-color:var(--verde)}
+.tile.badt{background:var(--teja);color:#fff;border-color:var(--teja)}
+.tile:disabled{cursor:default}
+
 /* ---------- scenarios ---------- */
 .scen-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-top:22px}
 .scen-card{border:2px solid var(--tinta);border-radius:var(--radius);background:#fff;box-shadow:var(--shadow);padding:18px;cursor:pointer;text-align:left;transition:transform .08s}
@@ -260,6 +274,10 @@ footer{margin-top:60px;font-family:'Space Mono',monospace;font-size:.72rem;color
 <section class="tab" id="tab-forja">
   <div class="forge-top">
     <h2>La Forja · say it in Spanish</h2>
+    <div class="modeswitch" role="group" aria-label="answer mode">
+      <button class="mbtn active" id="modeHabla" title="speak your answer — unlocks mastery levels 4–5">🎤 Hablar</button>
+      <button class="mbtn" id="modeArmar" title="build the sentence from tiles — silent mode, counts toward levels 1–3">🧩 Armar</button>
+    </div>
     <div class="stats">racha <b id="streak">0</b> · hoy <b id="todayCount">0</b> · pendientes <b id="dueCount">0</b></div>
   </div>
   <div class="filterbar">
@@ -276,17 +294,20 @@ footer{margin-top:60px;font-family:'Space Mono',monospace;font-size:.72rem;color
       <span class="chip ghost" id="dHint">?</span>
       <button class="backlink" id="hintBtn" type="button">show structure hint</button>
     </div>
+    <div class="assembly" id="dAssembly" style="display:none"><span class="ph">tap the pieces in order…</span></div>
+    <div class="tilebank" id="dTiles" style="display:none"></div>
     <div class="answer hidden-a" id="dAnswer">…</div>
     <div class="heard" id="dHeard"></div>
     <div class="verdict" id="dVerdict"></div>
     <div class="btnrow">
       <button class="btn mic" id="micBtn">🎤 Habla</button>
+      <button class="btn primary" id="checkBtn" style="display:none">Comprobar</button>
       <button class="btn" id="revealBtn">Mostrar respuesta</button>
       <button class="btn good" id="gotBtn" disabled>✓ Lo dije bien</button>
       <button class="btn bad" id="missBtn" disabled>✗ Fallé</button>
       <button class="btn primary" id="nextBtn">Siguiente →</button>
     </div>
-    <div class="keyhint">keys: <b>space</b> mic · <b>enter</b> reveal/next · <b>1</b> correct · <b>2</b> missed</div>
+    <div class="keyhint" id="dKeyhint">keys: <b>space</b> mic · <b>enter</b> reveal/next · <b>1</b> correct · <b>2</b> missed</div>
   </div>
 </section>
 
@@ -800,7 +821,8 @@ function buildItem(sc, pIdx, verb, comp){
   if(sc.question && sc.id==='sepuede'){
     en = `Can you ${verb.en}${comp?' '+comp[1]:''}? (asking if it\'s allowed)`;
   }
-  return {sc, pIdx, es, en, answers, person: sc.fixed ? '—' : P_LABEL[pIdx]};
+  const tiles = [form, verbEs].concat(comp ? [comp[0]] : []);
+  return {sc, pIdx, es, en, answers, verb, comp, tiles, person: sc.fixed ? '—' : P_LABEL[pIdx]};
 }
 
 /* Build one chained drill item: outer conjugated + inner infinitive + main verb */
@@ -820,8 +842,9 @@ function buildChainItem(outer, inner, pIdx, verb, comp){
   else                            en = tpl.replace('{v}',    innerEng(inner, verb, 'base'));
   en = addCompEn(en, comp);
   if(outer.id==='sepuede') en = `Can you ${addCompEn(innerEng(inner, verb, 'base'), comp)}? (asking if it's allowed)`;
+  const tiles = [form, inner.es, verbEs].concat(comp ? [comp[0]] : []);
   return {sc:outer, innerSc:SCAFFOLDS.find(s=>s.id===inner.id), pIdx, es, en, answers:[es],
-          person: outer.fixed ? '—' : P_LABEL[pIdx]};
+          verb, comp, tiles, person: outer.fixed ? '—' : P_LABEL[pIdx]};
 }
 
 /* Complement compatibility rules:
@@ -854,6 +877,7 @@ state.srs = state.srs || {};      // id -> {box, due, seen, right}
 state.dialect = state.dialect || 'es-MX';
 state.filter = Array.isArray(state.filter) ? state.filter.filter(id=>SCAFFOLDS.some(s=>s.id===id)) : []; // [] = all
 state.chains = state.chains !== false; // chained scaffolds on by default
+state.mode = state.mode === 'armar' || state.mode === 'habla' ? state.mode : 'habla'; // forge answer mode
 state.today = state.today || {date:'', n:0};
 const todayStr = new Date().toISOString().slice(0,10);
 if(state.today.date !== todayStr){ state.today = {date:todayStr, n:0}; }
@@ -871,10 +895,11 @@ function dueScaffolds(){
   const now = Date.now();
   return activeScaffolds().filter(s => srsFor(s.id).due <= now);
 }
-function gradeSrs(id, ok, silent){
+function gradeSrs(id, ok, silent, maxBox){
+  if(maxBox === undefined) maxBox = 4;
   const s = srsFor(id);
   s.seen++;
-  if(ok){ s.right++; s.box = Math.min(4, s.box+1); }
+  if(ok){ s.right++; if(s.box < maxBox) s.box++; } // capped modes never demote a higher box
   else { s.box = Math.max(0, s.box-1); }
   s.due = Date.now() + BOX_DAYS[s.box]*24*3600*1000;
   if(!silent){
@@ -885,8 +910,9 @@ function gradeSrs(id, ok, silent){
   updateForgeStats();
 }
 function gradeCurrent(ok){
-  gradeSrs(current.sc.id, ok);
-  if(current.innerSc) gradeSrs(current.innerSc.id, ok, true); // chain: inner gets SRS credit too
+  const maxBox = state.mode === 'armar' ? 3 : 4; // tiles reach "competent"; speaking unlocks mastery
+  gradeSrs(current.sc.id, ok, false, maxBox);
+  if(current.innerSc) gradeSrs(current.innerSc.id, ok, true, maxBox); // chain: inner gets SRS credit too
 }
 
 /* =====================================================
@@ -1049,6 +1075,12 @@ function showItem(){
   document.getElementById('dHeard').innerHTML = '';
   document.getElementById('dVerdict').textContent = ''; document.getElementById('dVerdict').className = 'verdict';
   setGrade(false);
+  if(state.mode==='armar'){
+    document.getElementById('dAnswer').style.display = 'none';
+    startTiles();
+  } else {
+    document.getElementById('dAnswer').style.display = '';
+  }
   updateForgeStats();
 }
 function setGrade(enabled){
@@ -1057,7 +1089,9 @@ function setGrade(enabled){
 }
 function reveal(){
   revealed = true;
-  document.getElementById('dAnswer').classList.remove('hidden-a');
+  const a = document.getElementById('dAnswer');
+  a.classList.remove('hidden-a');
+  a.style.display = ''; // armar hides it until reveal
   setGrade(true);
 }
 function showHint(){
@@ -1104,6 +1138,7 @@ function renderHeard(said, res){
   el.innerHTML = `<span class="lbl">heard:</span> ${html}`;
 }
 function startForgeMic(){
+  if(state.mode==='armar') return;
   if(!SR || listening) { if(listening) stopForgeMic(); return; }
   ensureMic().then(beginForgeMic);
 }
@@ -1150,6 +1185,113 @@ function updateForgeStats(){
   document.getElementById('streak').textContent = streak;
   document.getElementById('todayCount').textContent = state.today.n;
   document.getElementById('dueCount').textContent = dueScaffolds().length;
+}
+
+/* ---- armar (tile assembly) mode ---- */
+let tilePool = [], tilePlaced = [], tilesChecked = false;
+
+function shuffleA(a){
+  a = a.slice();
+  for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
+function buildDistractors(item){
+  const d = [];
+  const sc = item.sc, verb = item.verb;
+  // wrong persons of the same scaffold — forces reading I/you/we
+  if(!sc.fixed){
+    d.push(...shuffleA(sc.forms.filter((f,i)=>i!==item.pIdx)).slice(0,2));
+  }
+  // a different scaffold in the matching person — forces meaning discrimination
+  const others = SCAFFOLDS.filter(s=>s.id!==sc.id);
+  const o = others[Math.floor(Math.random()*others.length)];
+  d.push(o.fixed ? o.forms[0] : o.forms[sc.fixed ? Math.floor(Math.random()*4) : item.pIdx]);
+  if(verb){
+    // the classic trap: wrong verb form (gerundio vs infinitive)
+    d.push(sc.verbForm==='ger' ? (verb.refl ? verb.es : verb.es) : esGer(verb));
+    // another verb in the target form
+    let v2, g=0;
+    do { v2 = VERBS[Math.floor(Math.random()*VERBS.length)]; }
+    while((v2.es===verb.es || (sc.verbForm==='ger' && v2.refl)) && g++<20);
+    d.push(sc.verbForm==='ger' ? esGer(v2) : v2.es);
+  }
+  // chains: a competing inner link
+  if(item.innerSc){
+    const inners = Object.values(CHAIN_INNER).filter(x=>x.id!==item.innerSc.id);
+    d.push(inners[Math.floor(Math.random()*inners.length)].es);
+  }
+  // a complement that doesn't belong
+  if(item.comp){
+    let c2=null, g=0;
+    while(g++<20 && !c2){
+      const vv = VERBS[Math.floor(Math.random()*VERBS.length)];
+      if(vv.comps){ const c = vv.comps[Math.floor(Math.random()*vv.comps.length)]; if(c[0]!==item.comp[0]) c2=c; }
+    }
+    if(c2) d.push(c2[0]);
+  }
+  const real = new Set(item.tiles);
+  return [...new Set(d)].filter(x=>x && !real.has(x)).slice(0,6);
+}
+function startTiles(){
+  tilePool = shuffleA(current.tiles.concat(buildDistractors(current))).map(t=>({t, used:false, mark:''}));
+  tilePlaced = []; tilesChecked = false;
+  paintTiles();
+}
+function paintTiles(){
+  const bank = document.getElementById('dTiles');
+  bank.innerHTML = tilePool.map((p,i)=>
+    `<button class="tile ${p.used?'used':''}" data-i="${i}" ${p.used||tilesChecked?'disabled':''}>${p.t}</button>`).join('');
+  bank.querySelectorAll('.tile').forEach(b=>b.addEventListener('click',()=>{
+    const p = tilePool[+b.dataset.i];
+    if(p.used || tilesChecked) return;
+    p.used = true; tilePlaced.push(p); paintTiles();
+  }));
+  const asm = document.getElementById('dAssembly');
+  asm.innerHTML = tilePlaced.length
+    ? tilePlaced.map((p,i)=>`<button class="tile placed ${p.mark}" data-i="${i}" ${tilesChecked?'disabled':''}>${p.t}</button>`).join('')
+    : '<span class="ph">tap the pieces in order…</span>';
+  asm.querySelectorAll('.tile').forEach(b=>b.addEventListener('click',()=>{
+    if(tilesChecked) return;
+    const i = +b.dataset.i;
+    tilePlaced[i].used = false; tilePlaced.splice(i,1); paintTiles();
+  }));
+}
+function checkTiles(){
+  if(tilesChecked || !tilePlaced.length) return;
+  tilesChecked = true;
+  const ok = tilePlaced.length===current.tiles.length && tilePlaced.every((p,i)=>p.t===current.tiles[i]);
+  tilePlaced.forEach((p,i)=>p.mark = (current.tiles[i]===p.t) ? 'okt' : 'badt');
+  paintTiles();
+  reveal(); setGrade(false);
+  const v = document.getElementById('dVerdict');
+  if(ok){
+    v.textContent = '¡Muy bien! 🎉'; v.className = 'verdict ok';
+    gradeCurrent(true);
+    setTimeout(showItem, 1400);
+  } else {
+    v.textContent = 'Casi no — la respuesta correcta:'; v.className = 'verdict no';
+    gradeCurrent(false);
+  }
+}
+function setMode(m){
+  state.mode = m; store.save(state);
+  applyMode();
+  showItem();
+}
+function applyMode(){
+  const armar = state.mode==='armar';
+  document.getElementById('modeHabla').classList.toggle('active', !armar);
+  document.getElementById('modeArmar').classList.toggle('active', armar);
+  document.getElementById('micBtn').style.display = armar?'none':'';
+  document.getElementById('checkBtn').style.display = armar?'':'none';
+  document.getElementById('gotBtn').style.display = armar?'none':'';
+  document.getElementById('missBtn').style.display = armar?'none':'';
+  document.getElementById('dAssembly').style.display = armar?'flex':'none';
+  document.getElementById('dTiles').style.display = armar?'flex':'none';
+  document.getElementById('dHeard').style.display = armar?'none':'';
+  document.getElementById('dKeyhint').innerHTML = armar
+    ? 'tap tiles to build the sentence · tap a placed tile to remove it · <b>enter</b> check/next · speaking unlocks mastery levels 4–5'
+    : 'keys: <b>space</b> mic · <b>enter</b> reveal/next · <b>1</b> correct · <b>2</b> missed';
 }
 
 /* ---- structure filter ---- */
@@ -1414,6 +1556,9 @@ document.getElementById('fToggle').addEventListener('click',()=>{
   c.style.display = open ? 'none' : 'flex';
   document.getElementById('fToggle').textContent = open ? 'choose structures' : 'hide';
 });
+document.getElementById('modeHabla').addEventListener('click',()=>{ if(state.mode!=='habla') setMode('habla'); });
+document.getElementById('modeArmar').addEventListener('click',()=>{ if(state.mode!=='armar') setMode('armar'); });
+document.getElementById('checkBtn').addEventListener('click',checkTiles);
 document.getElementById('revealBtn').addEventListener('click',()=>{ if(!revealed) reveal(); });
 document.getElementById('hintBtn').addEventListener('click',showHint);
 document.getElementById('nextBtn').addEventListener('click',showItem);
@@ -1433,8 +1578,12 @@ document.getElementById('missBtn').addEventListener('click',()=>{
 document.addEventListener('keydown',e=>{
   if(!document.getElementById('tab-forja').classList.contains('show')) return;
   if(e.target.tagName==='SELECT'||e.target.tagName==='INPUT') return;
-  if(e.code==='Space'){ e.preventDefault(); startForgeMic(); }
-  else if(e.key==='Enter'){ e.preventDefault(); revealed ? showItem() : reveal(); }
+  if(e.code==='Space'){ if(state.mode!=='armar'){ e.preventDefault(); startForgeMic(); } }
+  else if(e.key==='Enter'){
+    e.preventDefault();
+    if(state.mode==='armar') tilesChecked || revealed ? showItem() : checkTiles();
+    else revealed ? showItem() : reveal();
+  }
   else if(e.key==='1' && !document.getElementById('gotBtn').disabled) document.getElementById('gotBtn').click();
   else if(e.key==='2' && !document.getElementById('missBtn').disabled) document.getElementById('missBtn').click();
 });
@@ -1466,12 +1615,14 @@ document.getElementById('resetBtn').addEventListener('click',()=>{
 });
 
 /* init */
+if(!SR && state.mode==='habla') state.mode = 'armar'; // no speech recognition → tiles are the working mode
 renderCheatsheet();
 initMachine();
 renderScenarios();
 renderFilter();
 renderVocabLists();
 vShuffleDeck();
+applyMode();
 updateForgeStats();
 showItem();
 </script>
