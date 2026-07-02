@@ -184,6 +184,16 @@ main section.tab.show{display:block;animation:fadein .25s ease}
 .timeopts button.sel{background:var(--tinta);color:var(--sol)}
 .backlink{background:none;border:none;font-family:'Space Mono',monospace;font-size:.8rem;color:var(--azul);text-decoration:underline;padding:0;margin-bottom:6px}
 
+/* ---------- vocabulario ---------- */
+.vpractice{max-width:680px;margin:22px auto 0}
+.vcontrols{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.vcontrols select{font-family:inherit;font-size:.9rem;padding:8px 10px;border:2px solid var(--tinta);border-radius:8px;background:#fff}
+.vcard{border:2px solid var(--tinta);border-radius:var(--radius);background:#fff;box-shadow:var(--shadow);padding:30px 24px;text-align:center;cursor:pointer;min-height:160px;transition:background .15s}
+.vcard.flipped{background:var(--sol)}
+.vcard .vhint{font-family:'Space Mono',monospace;font-size:.65rem;text-transform:uppercase;letter-spacing:.12em;color:#999;margin-bottom:12px}
+.vcard .vmain{font-family:'Archivo Black','Archivo',sans-serif;font-size:clamp(1.3rem,4vw,1.9rem);line-height:1.2}
+.vcard .vsub{margin-top:10px;color:#666;min-height:1.4em;font-size:.95rem}
+
 /* ---------- progress ---------- */
 .prog-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-top:22px}
 .prog-card{border:2px solid var(--tinta);border-radius:10px;background:#fff;padding:12px 14px;box-shadow:2px 2px 0 var(--tinta)}
@@ -212,6 +222,7 @@ footer{margin-top:60px;font-family:'Space Mono',monospace;font-size:.72rem;color
     <button data-tab="aprende" class="active">Aprende</button>
     <button data-tab="forja">Forja</button>
     <button data-tab="escenarios">Escenarios</button>
+    <button data-tab="vocab">Vocabulario</button>
     <button data-tab="progreso">Progreso</button>
   </nav>
 </header>
@@ -316,6 +327,46 @@ footer{margin-top:60px;font-family:'Space Mono',monospace;font-size:.72rem;color
       </div>
     </div>
   </div>
+</section>
+
+<!-- ============ VOCABULARIO ============ -->
+<section class="tab" id="tab-vocab">
+  <div class="forge-top" style="margin-top:26px">
+    <h2>Vocabulario · your <span id="vTotal">167</span> pieces</h2>
+    <div class="stats">memorize these and every sentence in the app is yours</div>
+  </div>
+
+  <div class="vpractice">
+    <div class="vcontrols">
+      <select id="vDir" aria-label="practice direction">
+        <option value="en">English → Spanish (produce it)</option>
+        <option value="es">Spanish → English (recognize it)</option>
+      </select>
+      <select id="vSet" aria-label="which pieces">
+        <option value="all">todas las piezas</option>
+        <option value="forma">solo las formas</option>
+        <option value="verbo">solo los verbos</option>
+      </select>
+      <button class="btn" id="vShuffle">🔀 Barajar</button>
+      <span class="stats" id="vLeft"></span>
+    </div>
+    <div class="vcard" id="vCard" tabindex="0" role="button" aria-label="flashcard, click to flip">
+      <div class="vhint" id="vHint">click to flip</div>
+      <div class="vmain" id="vMain">…</div>
+      <div class="vsub" id="vSub"></div>
+    </div>
+    <div class="btnrow" style="justify-content:center">
+      <button class="btn" id="vSay">🔊 Escuchar</button>
+      <button class="btn good" id="vKnow" disabled>✓ La sé</button>
+      <button class="btn bad" id="vAgain" disabled>↻ Otra vez</button>
+    </div>
+    <div class="keyhint" style="text-align:center">"La sé" removes the card · "Otra vez" sends it to the back of the deck</div>
+  </div>
+
+  <div class="cat"><h2 id="vFormHead">Las formas</h2><div class="rule"></div></div>
+  <div class="phrase-list" id="vForms"></div>
+  <div class="cat"><h2 id="vVerbHead">Los verbos</h2><div class="rule"></div></div>
+  <div class="phrase-list" id="vVerbs"></div>
 </section>
 
 <!-- ============ PROGRESO ============ -->
@@ -1273,6 +1324,77 @@ function renderProgress(){
 }
 
 /* =====================================================
+   VOCABULARIO — the 167 pieces + flashcard practice
+===================================================== */
+function formGloss(sc, i){
+  const t = sc.engT[i] || sc.engT[0];
+  return t.replace('{v}','…').replace('{ving}','…ing').replace('{ved}','… (past)').replace('{v3}','…');
+}
+const PIECES = [];
+SCAFFOLDS.forEach(sc=>sc.forms.forEach((f,i)=>PIECES.push({es:f, en:formGloss(sc,i), type:'forma', group:sc.es})));
+VERBS.forEach(v=>PIECES.push({es:v.es, en:'to '+v.en, type:'verbo'}));
+
+function renderVocabLists(){
+  const forms = PIECES.filter(p=>p.type==='forma');
+  const verbs = PIECES.filter(p=>p.type==='verbo');
+  document.getElementById('vTotal').textContent = PIECES.length;
+  document.getElementById('vFormHead').textContent = `Las formas (${forms.length}) — one small conjugation each`;
+  document.getElementById('vVerbHead').textContent = `Los verbos (${verbs.length}) — infinitives, never conjugated`;
+  document.getElementById('vForms').innerHTML = forms.map(p=>
+    `<div class="phrase"><b>${p.es}</b><span class="en">${p.en}</span></div>`).join('');
+  document.getElementById('vVerbs').innerHTML = verbs.map(p=>
+    `<div class="phrase"><b>${p.es}</b><span class="en">${p.en}</span></div>`).join('');
+}
+
+let vDeck = [], vFlipped = false;
+function vPaint(){
+  const cur = vDeck[0];
+  const card = document.getElementById('vCard');
+  const dir = document.getElementById('vDir').value;
+  card.classList.toggle('flipped', vFlipped);
+  document.getElementById('vLeft').textContent = vDeck.length ? `quedan ${vDeck.length}` : '';
+  document.getElementById('vKnow').disabled = !vFlipped || !cur;
+  document.getElementById('vAgain').disabled = !vFlipped || !cur;
+  document.getElementById('vSay').disabled = !cur;
+  if(!cur){
+    document.getElementById('vHint').textContent = 'deck finished';
+    document.getElementById('vMain').textContent = '🎉 ¡Terminado!';
+    document.getElementById('vSub').textContent = 'Barajar to go again';
+    return;
+  }
+  const front = dir==='en' ? cur.en : cur.es;
+  const back  = dir==='en' ? cur.es : cur.en;
+  document.getElementById('vHint').textContent = vFlipped ? 'answer' : (dir==='en' ? 'say it in Spanish, then flip' : 'what does it mean? flip to check');
+  document.getElementById('vMain').textContent = vFlipped ? back : front;
+  document.getElementById('vSub').textContent = vFlipped && cur.group ? 'from: ' + cur.group : '';
+}
+function vShuffleDeck(){
+  const set = document.getElementById('vSet').value;
+  vDeck = PIECES.filter(p=>set==='all' || p.type===set).slice();
+  for(let i=vDeck.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [vDeck[i],vDeck[j]]=[vDeck[j],vDeck[i]]; }
+  vFlipped = false;
+  vPaint();
+}
+function vSpeak(){
+  const cur = vDeck[0];
+  if(!cur || !window.speechSynthesis) return;
+  const u = new SpeechSynthesisUtterance(cur.es);
+  u.lang = state.dialect;
+  speechSynthesis.cancel();
+  speechSynthesis.speak(u);
+}
+document.getElementById('vCard').addEventListener('click', ()=>{ if(vDeck.length){ vFlipped = !vFlipped; vPaint(); } });
+document.getElementById('vCard').addEventListener('keydown', e=>{
+  if(e.key===' '||e.key==='Enter'){ e.preventDefault(); if(vDeck.length){ vFlipped=!vFlipped; vPaint(); } }
+});
+document.getElementById('vKnow').addEventListener('click', ()=>{ vDeck.shift(); vFlipped=false; vPaint(); });
+document.getElementById('vAgain').addEventListener('click', ()=>{ vDeck.push(vDeck.shift()); vFlipped=false; vPaint(); });
+document.getElementById('vShuffle').addEventListener('click', vShuffleDeck);
+document.getElementById('vSay').addEventListener('click', e=>{ e.stopPropagation(); vSpeak(); });
+document.getElementById('vDir').addEventListener('change', ()=>{ vFlipped=false; vPaint(); });
+document.getElementById('vSet').addEventListener('change', vShuffleDeck);
+
+/* =====================================================
    Tabs & wiring
 ===================================================== */
 document.querySelectorAll('nav button').forEach(b=>{
@@ -1348,6 +1470,8 @@ renderCheatsheet();
 initMachine();
 renderScenarios();
 renderFilter();
+renderVocabLists();
+vShuffleDeck();
 updateForgeStats();
 showItem();
 </script>
