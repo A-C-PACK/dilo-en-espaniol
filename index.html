@@ -548,7 +548,7 @@ const SCAFFOLDS = [
 const CHAIN_INNER = {
   tenerque:{id:'tenerque', es:'tener que', base:'have to {v}',      ger:'having to {v}'},
   poder:   {id:'poder',    es:'poder',     base:'be able to {v}',   ger:'being able to {v}'},
-  empezara:{id:'empezara', es:'empezar a', base:'start {ving}',     ger:'starting {ving}',  past:'started {ving}'},
+  empezara:{id:'empezara', es:'empezar a', base:'start {ving}',     ger:'starting to {v}',  past:'started {ving}'},
   dejarde: {id:'dejarde',  es:'dejar de',  base:'stop {ving}',      ger:'stopping {ving}',  past:'stopped {ving}'},
   volvera: {id:'volvera',  es:'volver a',  base:'{v} again',        ger:'{ving} again'},
   intentar:{id:'intentar', es:'intentar',  base:'try to {v}',       ger:'trying to {v}'},
@@ -649,7 +649,7 @@ const VERBS = [
  V('invitar','invite',{comps:[['a Juan','Juan']]}),
  V('cambiar','change',{comps:[['el plan','the plan']]}),
  V('probar','try',{ved:'tried',comps:[['la comida','the food'],['algo nuevo','something new']]}),
- V('ganar','win',{ved:'won',comps:[['el partido','the game']]}),
+ V('ganar','win',{ved:'won',ving:'winning',comps:[['el partido','the game']]}),
  V('gastar','spend',{ved:'spent',comps:[['menos','less']]}),
  V('ahorrar','save',{comps:[['dinero','money']]}),
  V('alquilar','rent',{comps:[['un carro','a car']]}),
@@ -847,16 +847,66 @@ function buildChainItem(outer, inner, pIdx, verb, comp){
           verb, comp, tiles, person: outer.fixed ? '—' : P_LABEL[pIdx]};
 }
 
+/* Verb × scaffold compatibility — combinatorial generation says nonsense without these:
+   - saber only takes learnable skills ("sé vivir aquí" ✗)
+   - pensar / tener ganas de need actions you can decide to do ("pienso olvidar eso" ✗)
+   - habitual soler / me gusta reject one-time decisions ("suelo firmar el contrato" ✗)
+   - dejar de needs a stoppable ongoing activity ("dejo de encontrar un buen precio" ✗)
+   - ¿se puede…? rejects reflexives (double se) and non-actions ("¿se puede entender esto?" ✗)
+   - acabar de rejects states ("acabo de vivir aquí" ✗) */
+const SKILL_VERBS = new Set(['hablar','leer','escribir','cocinar','bailar','cantar','nadar','manejar',
+  'jugar','usar','arreglar','preparar','cortar','organizar','enseñar','explicar','ahorrar','vender','lavar']);
+const NONVOL_VERBS = new Set(['entender','olvidar','encontrar','recordar','perder']);
+const ONEOFF_VERBS = new Set(['firmar','cancelar','mudarse','decidir']);
+const VERB_BLOCKS = {
+  saber:   v => !SKILL_VERBS.has(v.es),
+  pensar:  v => NONVOL_VERBS.has(v.es),
+  ganasde: v => NONVOL_VERBS.has(v.es),
+  soler:   v => ONEOFF_VERBS.has(v.es),
+  gusta:   v => ONEOFF_VERBS.has(v.es),
+  dejarde: v => NONVOL_VERBS.has(v.es) || ONEOFF_VERBS.has(v.es) || v.es==='terminar' || v.es==='entrar',
+  empezara:v => v.es==='entrar',
+  sepuede: v => v.refl || NONVOL_VERBS.has(v.es) || v.es==='ganar' || v.es==='mejorar' || v.es==='venir',
+  acabarde:v => v.es==='vivir',
+};
+function verbOK(sc, verb, inner){
+  if(inner){
+    // chains: volition/habit constraints belong to the inner scaffold ("pienso empezar a
+    // entender" is fine) — but "¿se puede…?" still can't take a reflexive main verb
+    if(sc.id==='sepuede' && verb.refl) return false;
+    const b = VERB_BLOCKS[inner.id];
+    return !(b && b(verb));
+  }
+  const b = VERB_BLOCKS[sc.id];
+  return !(b && b(verb));
+}
+
 /* Complement compatibility rules:
    - future time words never pair with past/habitual/progressive structures
-   - "mi/mis" complements only with yo & nosotros, never with impersonal structures */
+   - "ahora" never pairs with past/habitual structures ("acabo de entrar ahora" ✗)
+   - "mi/mis" complements only with yo & nosotros, never with impersonal structures
+   - "conmigo" only for tú/él ("vengo conmigo" ✗), "juntos" only for nosotros/impersonal
+   - dejar de drops one-off objects ("dejo de escribir un mensaje" ✗ → bare "dejo de escribir") */
 const FUTURE_COMPS = new Set(['mañana','esta noche','pronto','más tarde']);
-const NO_FUTURE = new Set(['acabarde','soler','dejarde','estar']);
+const NO_FUTURE = new Set(['acabarde','soler','dejarde','estar','gusta']);
+const NO_NOW = new Set(['acabarde','soler','dejarde','gusta']);
 const POSS = /\bmis?\b/;
+const DEJARDE_BAD = new Set(['leer|un libro','escribir|un mensaje','ver|una película','ver|el partido',
+  'comprar|un regalo','pagar|la cuenta','vender|mi carro','buscar|las llaves','enviar|el correo',
+  'tomar|un taxi','tomar|un descanso','llevar|esto','explicar|el problema','probar|algo nuevo',
+  'descargar|la aplicación','mostrar|las fotos','comer|algo','preguntar|algo','decir|algo',
+  'pedir|otra cosa','elegir|un restaurante','beber|más café','aprender|algo nuevo',
+  'gastar|menos','dormir|más','aprender|más','practicar|más']);
+const SABER_BAD = new Set(['hablar|con mi amigo','leer|un libro']);
 function compsFor(sc, verb, pIdx, inner){
   let cs = verb.comps || [];
   if(NO_FUTURE.has(sc.id) || (inner && NO_FUTURE.has(inner.id))) cs = cs.filter(c=>!FUTURE_COMPS.has(c[0]));
+  if(NO_NOW.has(sc.id) || (inner && NO_NOW.has(inner.id))) cs = cs.filter(c=>c[0]!=='ahora');
   if(sc.fixed || pIdx===1 || pIdx===2) cs = cs.filter(c=>!POSS.test(c[0]));
+  if(!sc.fixed && pIdx!==1 && pIdx!==2) cs = cs.filter(c=>c[0]!=='conmigo');
+  if(!sc.fixed && pIdx!==3) cs = cs.filter(c=>c[0]!=='juntos');
+  if(sc.id==='dejarde' || (inner && inner.id==='dejarde')) cs = cs.filter(c=>!DEJARDE_BAD.has(verb.es+'|'+c[0]));
+  if(sc.id==='saber') cs = cs.filter(c=>!SABER_BAD.has(verb.es+'|'+c[0]));
   return cs;
 }
 /* English: slot the complement before a trailing "again" ("read a book again") */
@@ -976,7 +1026,7 @@ function spinMachine(){
   const pIdx = sc.fixed ? 0 : Math.floor(Math.random()*4);
   let verb;
   do { verb = VERBS[Math.floor(Math.random()*VERBS.length)]; }
-  while(sc.verbForm==='ger' && verb.refl);
+  while((sc.verbForm==='ger' && verb.refl) || !verbOK(sc, verb));
   const comps = compsFor(sc, verb, pIdx);
   const comp = comps.length ? comps[Math.floor(Math.random()*comps.length)] : null;
   const item = buildItem(sc, pIdx, verb, comp);
@@ -1001,6 +1051,7 @@ function countPrompts(){
     const ps = sc.fixed ? [0] : [0,1,2,3];
     for(const p of ps) for(const v of VERBS){
       if(sc.verbForm==='ger' && v.refl) continue;
+      if(!verbOK(sc, v)) continue;
       total += compsFor(sc, v, p).length || 1;
     }
   }
@@ -1009,6 +1060,7 @@ function countPrompts(){
     const ps = outer.fixed ? [0] : [0,1,2,3];
     for(const p of ps) for(const v of VERBS){
       if((iId==='tenerque'&&v.es==='tener')||(iId==='volvera'&&v.es==='regresar')) continue;
+      if(!verbOK(outer, v, inner)) continue;
       total += compsFor(outer, v, p, inner).length || 1;
     }
   }
@@ -1039,7 +1091,7 @@ function pickChain(){
   const pIdx = outer.fixed ? 0 : Math.floor(Math.random()*4);
   let verb;
   do { verb = VERBS[Math.floor(Math.random()*VERBS.length)]; }
-  while((iId==='tenerque' && verb.es==='tener') || (iId==='volvera' && verb.es==='regresar'));
+  while((iId==='tenerque' && verb.es==='tener') || (iId==='volvera' && verb.es==='regresar') || !verbOK(outer, verb, inner));
   const comps = compsFor(outer, verb, pIdx, inner);
   const comp = comps.length ? comps[Math.floor(Math.random()*comps.length)] : null;
   return buildChainItem(outer, inner, pIdx, verb, comp);
@@ -1058,7 +1110,7 @@ function pickItem(){
   const pIdx = sc.fixed ? 0 : Math.floor(Math.random()*4);
   let verb;
   do { verb = VERBS[Math.floor(Math.random()*VERBS.length)]; }
-  while(sc.verbForm==='ger' && verb.refl);
+  while((sc.verbForm==='ger' && verb.refl) || !verbOK(sc, verb));
   const comps = compsFor(sc, verb, pIdx);
   const comp = comps.length ? comps[Math.floor(Math.random()*comps.length)] : null;
   return buildItem(sc, pIdx, verb, comp);
