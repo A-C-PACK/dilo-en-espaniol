@@ -276,6 +276,7 @@ footer{margin-top:60px;font-family:'Space Mono',monospace;font-size:.72rem;color
     <h2>La Forja · say it in Spanish</h2>
     <div class="modeswitch" role="group" aria-label="answer mode">
       <button class="mbtn active" id="modeHabla" title="speak your answer — unlocks mastery levels 4–5">🎤 Hablar</button>
+      <button class="mbtn" id="modeEscucha" title="hear it in Spanish first — listen, then say it back">🎧 Escucha</button>
       <button class="mbtn" id="modeArmar" title="build the sentence from tiles — silent mode, counts toward levels 1–3">🧩 Armar</button>
     </div>
     <div class="stats">racha <b id="streak">0</b> · hoy <b id="todayCount">0</b> · pendientes <b id="dueCount">0</b></div>
@@ -428,21 +429,28 @@ const SCAFFOLDS = [
  {id:'tenerque', cat:'Necesidad y obligación', es:'tener que + infinitivo', en:'to have to', inf:'tener que',
   forms:['tengo que','tienes que','tiene que','tenemos que'],
   engT:['I have to {v}','you have to {v}','he/she has to {v}','we have to {v}'],
+  negT:['I don\'t have to {v}','you don\'t have to {v}','he/she doesn\'t have to {v}','we don\'t have to {v}'],
+  qT:['do I have to {v}?','do you have to {v}?','does he/she have to {v}?','do we have to {v}?'],
   ex:{es:'Tengo que trabajar mañana.',en:'I have to work tomorrow.'},
   tip:'Your #1 workhorse. Personal obligation: someone specific has to do it.'},
  {id:'hayque', cat:'Necesidad y obligación', es:'hay que + infinitivo', en:'one must / you gotta', fixed:true,
   forms:['hay que'],
   engT:['(in general) one has to {v}'],
+  qT:['do you have to {v}? (in general)'],
   ex:{es:'Hay que practicar todos los días.',en:'You have to practice every day (in general).'},
   tip:'Impersonal — no conjugation ever. Perfect when you mean "people in general".'},
  {id:'necesitar', cat:'Necesidad y obligación', es:'necesitar + infinitivo', en:'to need to',
   forms:['necesito','necesitas','necesita','necesitamos'],
   engT:['I need to {v}','you need to {v}','he/she needs to {v}','we need to {v}'],
+  negT:['I don\'t need to {v}','you don\'t need to {v}','he/she doesn\'t need to {v}','we don\'t need to {v}'],
+  qT:['do I need to {v}?','do you need to {v}?','does he/she need to {v}?','do we need to {v}?'],
   ex:{es:'Necesito descansar un poco.',en:'I need to rest a little.'},
   tip:'Fully regular — the easiest scaffold to conjugate.'},
  {id:'deber', cat:'Necesidad y obligación', es:'deber + infinitivo', en:'should / ought to',
   forms:['debo','debes','debe','debemos'],
   engT:['I should {v}','you should {v}','he/she should {v}','we should {v}'],
+  negT:['I shouldn\'t {v}','you shouldn\'t {v}','he/she shouldn\'t {v}','we shouldn\'t {v}'],
+  qT:['should I {v}?','should you {v}?','should he/she {v}?','should we {v}?'],
   ex:{es:'Debes dormir más.',en:'You should sleep more.'},
   tip:'Softer than tener que. «Deberías» is the extra-polite "you really should".'},
 
@@ -450,12 +458,16 @@ const SCAFFOLDS = [
  {id:'ira', cat:'Futuro', es:'ir a + infinitivo', en:'going to',
   forms:['voy a','vas a','va a','vamos a'],
   engT:['I\'m going to {v}','you\'re going to {v}','he/she is going to {v}','we\'re going to {v}'],
+  negT:['I\'m not going to {v}','you\'re not going to {v}','he/she isn\'t going to {v}','we\'re not going to {v}'],
+  qT:['am I going to {v}?','are you going to {v}?','is he/she going to {v}?','are we going to {v}?'], qP:[1,2,3],
   rx:'(voy|vas|va|vamos)\\s+a\\s+\\w+(?:ar|er|ir)\\b',
   ex:{es:'Voy a comer con mi familia.',en:'I\'m going to eat with my family.'},
   tip:'Replaces the entire future tense. «Vamos a…» also means "let\'s…!"'},
  {id:'pensar', cat:'Futuro', es:'pensar + infinitivo', en:'to plan to',
   forms:['pienso','piensas','piensa','pensamos'],
   engT:['I plan to {v}','you plan to {v}','he/she plans to {v}','we plan to {v}'],
+  negT:['I\'m not planning to {v}','you\'re not planning to {v}','he/she isn\'t planning to {v}','we\'re not planning to {v}'],
+  qT:['do I plan to {v}?','do you plan to {v}?','does he/she plan to {v}?','do we plan to {v}?'], qP:[1,2,3],
   ex:{es:'Pienso viajar a México este año.',en:'I plan to travel to Mexico this year.'},
   tip:'Sounds impressively native for stating intentions. e→ie stem change (but not in nosotros).'},
 
@@ -463,6 +475,7 @@ const SCAFFOLDS = [
  {id:'acabarde', cat:'Pasado reciente', es:'acabar de + infinitivo', en:'to have just…',
   forms:['acabo de','acabas de','acaba de','acabamos de'],
   engT:['I just {ved}','you just {ved}','he/she just {ved}','we just {ved}'],
+  qT:['did I just {v}?','did you just {v}?','did he/she just {v}?','did we just {v}?'], qP:[1,2,3],
   ex:{es:'Acabo de llegar a casa.',en:'I just got home.'},
   tip:'Talk about the past with zero past-tense conjugation. Regular -ar verb.'},
 
@@ -470,21 +483,29 @@ const SCAFFOLDS = [
  {id:'querer', cat:'Deseos y gustos', es:'querer + infinitivo', en:'to want to',
   forms:['quiero','quieres','quiere','queremos'],
   engT:['I want to {v}','you want to {v}','he/she wants to {v}','we want to {v}'],
+  negT:['I don\'t want to {v}','you don\'t want to {v}','he/she doesn\'t want to {v}','we don\'t want to {v}'],
+  qT:['do I want to {v}?','do you want to {v}?','does he/she want to {v}?','do we want to {v}?'], qP:[1,2,3],
   ex:{es:'Quiero aprender más español.',en:'I want to learn more Spanish.'},
   tip:'e→ie stem change. «Quisiera» is the polite restaurant version of quiero.'},
  {id:'gustaria', cat:'Deseos y gustos', es:'me gustaría + infinitivo', en:'would like to',
   forms:['me gustaría','te gustaría','le gustaría','nos gustaría'],
   engT:['I\'d like to {v}','you\'d like to {v}','he/she\'d like to {v}','we\'d like to {v}'],
+  negT:['I wouldn\'t like to {v}','you wouldn\'t like to {v}','he/she wouldn\'t like to {v}','we wouldn\'t like to {v}'],
+  qT:['would I like to {v}?','would you like to {v}?','would he/she like to {v}?','would we like to {v}?'], qP:[1,2,3],
   ex:{es:'Me gustaría reservar una mesa.',en:'I\'d like to book a table.'},
   tip:'Only «gustaría» ever — just swap the pronoun (me/te/le/nos). Instant politeness.'},
  {id:'gusta', cat:'Deseos y gustos', es:'me gusta + infinitivo', en:'to like to',
   forms:['me gusta','te gusta','le gusta','nos gusta'],
   engT:['I like to {v}','you like to {v}','he/she likes to {v}','we like to {v}'],
+  negT:['I don\'t like to {v}','you don\'t like to {v}','he/she doesn\'t like to {v}','we don\'t like to {v}'],
+  qT:['do I like to {v}?','do you like to {v}?','does he/she like to {v}?','do we like to {v}?'], qP:[1,2,3],
   ex:{es:'Me gusta cocinar en casa.',en:'I like to cook at home.'},
   tip:'Same trick as gustaría: the verb never changes, only the pronoun.'},
  {id:'ganasde', cat:'Deseos y gustos', es:'tener ganas de + infinitivo', en:'to feel like…',
   forms:['tengo ganas de','tienes ganas de','tiene ganas de','tenemos ganas de'],
   engT:['I feel like {ving}','you feel like {ving}','he/she feels like {ving}','we feel like {ving}'],
+  negT:['I don\'t feel like {ving}','you don\'t feel like {ving}','he/she doesn\'t feel like {ving}','we don\'t feel like {ving}'],
+  qT:['do I feel like {ving}?','do you feel like {ving}?','does he/she feel like {ving}?','do we feel like {ving}?'], qP:[1,2,3],
   ex:{es:'Tengo ganas de salir esta noche.',en:'I feel like going out tonight.'},
   tip:'Reuses the tener forms you already know. Very common in casual speech.'},
 
@@ -492,6 +513,8 @@ const SCAFFOLDS = [
  {id:'poder', cat:'Habilidad y permiso', es:'poder + infinitivo', en:'can / to be able to', inf:'poder',
   forms:['puedo','puedes','puede','podemos'],
   engT:['I can {v}','you can {v}','he/she can {v}','we can {v}'],
+  negT:['I can\'t {v}','you can\'t {v}','he/she can\'t {v}','we can\'t {v}'],
+  qT:['can I {v}?','can you {v}?','can he/she {v}?','can we {v}?'],
   ex:{es:'¿Puedes ayudar con esto?',en:'Can you help with this?'},
   tip:'o→ue stem change. «¿Puedo…?» asks permission; «¿Puedes…?» asks a favor.'},
  {id:'sepuede', cat:'Habilidad y permiso', es:'¿se puede + infinitivo?', en:'is it OK to…?', fixed:true, question:true,
@@ -502,6 +525,8 @@ const SCAFFOLDS = [
  {id:'saber', cat:'Habilidad y permiso', es:'saber + infinitivo', en:'to know how to',
   forms:['sé','sabes','sabe','sabemos'],
   engT:['I know how to {v}','you know how to {v}','he/she knows how to {v}','we know how to {v}'],
+  negT:['I don\'t know how to {v}','you don\'t know how to {v}','he/she doesn\'t know how to {v}','we don\'t know how to {v}'],
+  qT:['do I know how to {v}?','do you know how to {v}?','does he/she know how to {v}?','do we know how to {v}?'], qP:[1,2],
   ex:{es:'Sé cocinar bastante bien.',en:'I know how to cook pretty well.'},
   tip:'Skills = saber, possibility = poder. «Sé nadar» — I know how to swim.'},
 
@@ -509,11 +534,14 @@ const SCAFFOLDS = [
  {id:'soler', cat:'Hábitos y cambios', es:'soler + infinitivo', en:'to usually…',
   forms:['suelo','sueles','suele','solemos'],
   engT:['I usually {v}','you usually {v}','he/she usually {v3}','we usually {v}'],
+  negT:['I don\'t usually {v}','you don\'t usually {v}','he/she doesn\'t usually {v}','we don\'t usually {v}'],
+  qT:['do I usually {v}?','do you usually {v}?','does he/she usually {v}?','do we usually {v}?'], qP:[1,2],
   ex:{es:'Suelo caminar en la mañana.',en:'I usually walk in the morning.'},
   tip:'One little verb kills the need for "normalmente" + conjugation everywhere.'},
  {id:'empezara', cat:'Hábitos y cambios', es:'empezar a + infinitivo', en:'to start…', inf:'empezar a',
   forms:['empiezo a','empiezas a','empieza a','empezamos a'],
   engT:['I\'m starting to {v}','you\'re starting to {v}','he/she is starting to {v}','we\'re starting to {v}'],
+  qT:['am I starting to {v}?','are you starting to {v}?','is he/she starting to {v}?','are we starting to {v}?'], qP:[1,2,3],
   ex:{es:'Empiezo a entender más.',en:'I\'m starting to understand more.'},
   tip:'Don\'t forget the «a». Pairs beautifully with voy a: «voy a empezar a…»'},
  {id:'dejarde', cat:'Hábitos y cambios', es:'dejar de + infinitivo', en:'to stop…', inf:'dejar de',
@@ -524,6 +552,8 @@ const SCAFFOLDS = [
  {id:'volvera', cat:'Hábitos y cambios', es:'volver a + infinitivo', en:'to do again', inf:'volver a',
   forms:['vuelvo a','vuelves a','vuelve a','volvemos a'],
   engT:['I {v} again','you {v} again','he/she {v3} again','we {v} again'],
+  negT:['I\'m not {ving} again','you\'re not {ving} again','he/she isn\'t {ving} again','we\'re not {ving} again'],
+  qT:['am I {ving} again?','are you {ving} again?','is he/she {ving} again?','are we {ving} again?'], qP:[1,2,3],
   ex:{es:'Vuelvo a leer la lección.',en:'I read the lesson again.'},
   tip:'Cleaner than «otra vez» every time. o→ue stem change.'},
  {id:'intentar', cat:'Hábitos y cambios', es:'intentar + infinitivo', en:'to try to', inf:'intentar',
@@ -536,6 +566,8 @@ const SCAFFOLDS = [
  {id:'estar', cat:'Ahora mismo', es:'estar + gerundio', en:'to be …ing', verbForm:'ger',
   forms:['estoy','estás','está','estamos'],
   engT:['I\'m {ving}','you\'re {ving}','he/she is {ving}','we\'re {ving}'],
+  negT:['I\'m not {ving}','you\'re not {ving}','he/she isn\'t {ving}','we\'re not {ving}'],
+  qT:['am I {ving}?','are you {ving}?','is he/she {ving}?','are we {ving}?'], qP:[1,2,3],
   rx:'(estoy|estas|esta|estamos)\\s+\\w+(?:ando|iendo|yendo)\\b',
   ex:{es:'Estoy aprendiendo español.',en:'I\'m learning Spanish.'},
   tip:'The one non-infinitive scaffold: -ar→-ando, -er/-ir→-iendo. Worth it.'},
@@ -790,8 +822,32 @@ function normalize(s){
     .replace(/\s+/g,' ').trim();
 }
 
+/* Negation & question variants — negT/qT English template arrays on each scaffold;
+   qP limits question persons where a yo-question would be odd ("¿quiero comer?") */
+function variantsFor(sc, pIdx){
+  const vs = [null];
+  if(sc.negT) vs.push('neg');
+  if(sc.qT && (!sc.qP || sc.qP.includes(pIdx))) vs.push('q');
+  return vs;
+}
+function pickVariant(sc, pIdx){
+  const vs = variantsFor(sc, pIdx);
+  if(vs.length===1 || Math.random()<0.5) return null;
+  return vs[1+Math.floor(Math.random()*(vs.length-1))];
+}
+function engTpl(sc, pIdx, variant){
+  const tset = variant==='neg' ? sc.negT : variant==='q' ? sc.qT : sc.engT;
+  return sc.fixed ? tset[0] : tset[pIdx];
+}
+
+/* Negated Spanish wants "nada", not "algo" ("no quiero comer algo" ✗) — drop the comp */
+function negComp(comp, variant){
+  return (variant==='neg' && comp && /^algo\b/.test(comp[0])) ? null : comp;
+}
+
 /* Build one drill item */
-function buildItem(sc, pIdx, verb, comp){
+function buildItem(sc, pIdx, verb, comp, variant){
+  comp = negComp(comp, variant);
   const form = sc.fixed ? sc.forms[0] : sc.forms[pIdx];
   let verbEs, answers=[];
   if(sc.verbForm==='ger'){
@@ -810,8 +866,10 @@ function buildItem(sc, pIdx, verb, comp){
   let es = `${form} ${verbEs}${comp?' '+comp[0]:''}`;
   if(sc.question) es = `¿${es.charAt(0)}${es.slice(1)}?`;
   if(!answers.length) answers.push(es);
+  if(variant==='neg'){ es = 'no ' + es; answers = answers.map(a=>'no '+a); }
+  if(variant==='q'){ es = `¿${es}?`; answers = answers.map(a=>`¿${a}?`); }
 
-  const tpl = sc.fixed ? sc.engT[0] : sc.engT[pIdx];
+  const tpl = engTpl(sc, pIdx, variant);
   let en = tpl
     .replace('{v3}', en3s(verb))
     .replace('{ved}', enPast(verb))
@@ -821,8 +879,8 @@ function buildItem(sc, pIdx, verb, comp){
   if(sc.question && sc.id==='sepuede'){
     en = `Can you ${verb.en}${comp?' '+comp[1]:''}? (asking if it\'s allowed)`;
   }
-  const tiles = [form, verbEs].concat(comp ? [comp[0]] : []);
-  return {sc, pIdx, es, en, answers, verb, comp, tiles, person: sc.fixed ? '—' : P_LABEL[pIdx]};
+  const tiles = (variant==='neg' ? ['no'] : []).concat([form, verbEs]).concat(comp ? [comp[0]] : []);
+  return {sc, pIdx, es, en, answers, verb, comp, tiles, variant, person: sc.fixed ? '—' : P_LABEL[pIdx]};
 }
 
 /* Build one chained drill item: outer conjugated + inner infinitive + main verb */
@@ -830,21 +888,24 @@ function innerEng(inner, verb, mode){
   const tpl = inner[mode] || inner.base;
   return tpl.replace('{ving}', enGer(verb)).replace('{v}', verb.en);
 }
-function buildChainItem(outer, inner, pIdx, verb, comp){
+function buildChainItem(outer, inner, pIdx, verb, comp, variant){
+  comp = negComp(comp, variant);
   const form = outer.fixed ? outer.forms[0] : outer.forms[pIdx];
   const verbEs = verb.refl ? (outer.fixed ? verb.es : reflInf(verb,pIdx)) : verb.es;
   let es = `${form} ${inner.es} ${verbEs}${comp?' '+comp[0]:''}`;
   if(outer.question) es = `¿${es}?`;
-  const tpl = outer.fixed ? outer.engT[0] : outer.engT[pIdx];
+  if(variant==='neg') es = 'no ' + es;
+  if(variant==='q') es = `¿${es}?`;
+  const tpl = engTpl(outer, pIdx, variant);
   let en;
   if(tpl.includes('{ved}'))       en = tpl.replace('{ved}',  innerEng(inner, verb, 'past'));
   else if(tpl.includes('{ving}')) en = tpl.replace('{ving}', innerEng(inner, verb, 'ger'));
   else                            en = tpl.replace('{v}',    innerEng(inner, verb, 'base'));
   en = addCompEn(en, comp);
   if(outer.id==='sepuede') en = `Can you ${addCompEn(innerEng(inner, verb, 'base'), comp)}? (asking if it's allowed)`;
-  const tiles = [form, inner.es, verbEs].concat(comp ? [comp[0]] : []);
+  const tiles = (variant==='neg' ? ['no'] : []).concat([form, inner.es, verbEs]).concat(comp ? [comp[0]] : []);
   return {sc:outer, innerSc:SCAFFOLDS.find(s=>s.id===inner.id), pIdx, es, en, answers:[es],
-          verb, comp, tiles, person: outer.fixed ? '—' : P_LABEL[pIdx]};
+          verb, comp, tiles, variant, person: outer.fixed ? '—' : P_LABEL[pIdx]};
 }
 
 /* Verb × scaffold compatibility — combinatorial generation says nonsense without these:
@@ -909,10 +970,15 @@ function compsFor(sc, verb, pIdx, inner){
   if(sc.id==='saber') cs = cs.filter(c=>!SABER_BAD.has(verb.es+'|'+c[0]));
   return cs;
 }
-/* English: slot the complement before a trailing "again" ("read a book again") */
+/* English: slot the complement before a trailing "again" ("read a book again")
+   and before the "?" of question variants ("is he/she cleaning the house?") */
 function addCompEn(en, comp){
   if(!comp) return en;
-  return en.endsWith(' again') ? en.slice(0,-6) + ' ' + comp[1] + ' again' : en + ' ' + comp[1];
+  if(en.endsWith(' again'))  return en.slice(0,-6) + ' ' + comp[1] + ' again';
+  if(en.endsWith(' again?')) return en.slice(0,-7) + ' ' + comp[1] + ' again?';
+  const q = en.indexOf('?');
+  if(q >= 0) return en.slice(0,q) + ' ' + comp[1] + en.slice(q);
+  return en + ' ' + comp[1];
 }
 
 /* =====================================================
@@ -927,7 +993,7 @@ state.srs = state.srs || {};      // id -> {box, due, seen, right}
 state.dialect = state.dialect || 'es-MX';
 state.filter = Array.isArray(state.filter) ? state.filter.filter(id=>SCAFFOLDS.some(s=>s.id===id)) : []; // [] = all
 state.chains = state.chains !== false; // chained scaffolds on by default
-state.mode = state.mode === 'armar' || state.mode === 'habla' ? state.mode : 'habla'; // forge answer mode
+state.mode = ['armar','habla','escucha'].includes(state.mode) ? state.mode : 'habla'; // forge answer mode
 state.today = state.today || {date:'', n:0};
 const todayStr = new Date().toISOString().slice(0,10);
 if(state.today.date !== todayStr){ state.today = {date:todayStr, n:0}; }
@@ -1052,7 +1118,7 @@ function countPrompts(){
     for(const p of ps) for(const v of VERBS){
       if(sc.verbForm==='ger' && v.refl) continue;
       if(!verbOK(sc, v)) continue;
-      total += compsFor(sc, v, p).length || 1;
+      total += (compsFor(sc, v, p).length || 1) * variantsFor(sc, p).length;
     }
   }
   for(const [oId,iId] of CHAIN_PAIRS){
@@ -1061,7 +1127,7 @@ function countPrompts(){
     for(const p of ps) for(const v of VERBS){
       if((iId==='tenerque'&&v.es==='tener')||(iId==='volvera'&&v.es==='regresar')) continue;
       if(!verbOK(outer, v, inner)) continue;
-      total += compsFor(outer, v, p, inner).length || 1;
+      total += (compsFor(outer, v, p, inner).length || 1) * variantsFor(outer, p).length;
     }
   }
   return total;
@@ -1094,7 +1160,7 @@ function pickChain(){
   while((iId==='tenerque' && verb.es==='tener') || (iId==='volvera' && verb.es==='regresar') || !verbOK(outer, verb, inner));
   const comps = compsFor(outer, verb, pIdx, inner);
   const comp = comps.length ? comps[Math.floor(Math.random()*comps.length)] : null;
-  return buildChainItem(outer, inner, pIdx, verb, comp);
+  return buildChainItem(outer, inner, pIdx, verb, comp, pickVariant(outer, pIdx));
 }
 function pickItem(){
   if(state.chains && Math.random() < 1/3){
@@ -1113,13 +1179,22 @@ function pickItem(){
   while((sc.verbForm==='ger' && verb.refl) || !verbOK(sc, verb));
   const comps = compsFor(sc, verb, pIdx);
   const comp = comps.length ? comps[Math.floor(Math.random()*comps.length)] : null;
-  return buildItem(sc, pIdx, verb, comp);
+  return buildItem(sc, pIdx, verb, comp, pickVariant(sc, pIdx));
 }
 
 function showItem(){
   current = pickItem(); revealed = false; hinted = false;
-  document.getElementById('dKicker').textContent = current.innerSc ? 'DILO EN ESPAÑOL → ⛓ CADENA' : 'DILO EN ESPAÑOL →';
-  document.getElementById('dPrompt').textContent = '“' + current.en + '”';
+  const esc = state.mode==='escucha';
+  document.getElementById('dKicker').textContent =
+    (esc ? 'ESCUCHA Y REPITE' : 'DILO EN ESPAÑOL') + (current.innerSc ? ' → ⛓ CADENA' : ' →');
+  const promptEl = document.getElementById('dPrompt');
+  if(esc){
+    promptEl.innerHTML = '<button class="btn mic" id="playBtn" type="button">🔊 Escuchar otra vez</button>';
+    document.getElementById('playBtn').addEventListener('click', speakCurrent);
+    speakCurrent();
+  } else {
+    promptEl.textContent = '“' + current.en + '”';
+  }
   const hint = document.getElementById('dHint');
   hint.textContent = '?'; hint.className = 'chip ghost';
   const ans = document.getElementById('dAnswer');
@@ -1144,7 +1219,19 @@ function reveal(){
   const a = document.getElementById('dAnswer');
   a.classList.remove('hidden-a');
   a.style.display = ''; // armar hides it until reveal
+  if(state.mode==='escucha'){ // now show what it meant, keep a small replay
+    const promptEl = document.getElementById('dPrompt');
+    promptEl.innerHTML = '“' + current.en + '” <button class="backlink" id="playBtn" type="button">🔊 otra vez</button>';
+    document.getElementById('playBtn').addEventListener('click', speakCurrent);
+  }
   setGrade(true);
+}
+function speakCurrent(){
+  if(!current || !window.speechSynthesis) return;
+  const u = new SpeechSynthesisUtterance(current.es);
+  u.lang = state.dialect; u.rate = 0.9;
+  speechSynthesis.cancel();
+  speechSynthesis.speak(u);
 }
 function showHint(){
   hinted = true;
@@ -1272,6 +1359,8 @@ function buildDistractors(item){
     const inners = Object.values(CHAIN_INNER).filter(x=>x.id!==item.innerSc.id);
     d.push(inners[Math.floor(Math.random()*inners.length)].es);
   }
+  // negation trap: a stray "no" tempts you on affirmative items
+  if(item.variant!=='neg' && Math.random()<0.4) d.push('no');
   // a complement that doesn't belong
   if(item.comp){
     let c2=null, g=0;
@@ -1331,8 +1420,9 @@ function setMode(m){
   showItem();
 }
 function applyMode(){
-  const armar = state.mode==='armar';
-  document.getElementById('modeHabla').classList.toggle('active', !armar);
+  const armar = state.mode==='armar', esc = state.mode==='escucha';
+  document.getElementById('modeHabla').classList.toggle('active', state.mode==='habla');
+  document.getElementById('modeEscucha').classList.toggle('active', esc);
   document.getElementById('modeArmar').classList.toggle('active', armar);
   document.getElementById('micBtn').style.display = armar?'none':'';
   document.getElementById('checkBtn').style.display = armar?'':'none';
@@ -1343,6 +1433,8 @@ function applyMode(){
   document.getElementById('dHeard').style.display = armar?'none':'';
   document.getElementById('dKeyhint').innerHTML = armar
     ? 'tap tiles to build the sentence · tap a placed tile to remove it · <b>enter</b> check/next · speaking unlocks mastery levels 4–5'
+    : esc
+    ? 'keys: <b>space</b> mic · <b>r</b> 🔊 otra vez · <b>enter</b> reveal/next · <b>1</b> correct · <b>2</b> missed'
     : 'keys: <b>space</b> mic · <b>enter</b> reveal/next · <b>1</b> correct · <b>2</b> missed';
 }
 
@@ -1609,7 +1701,9 @@ document.getElementById('fToggle').addEventListener('click',()=>{
   document.getElementById('fToggle').textContent = open ? 'choose structures' : 'hide';
 });
 document.getElementById('modeHabla').addEventListener('click',()=>{ if(state.mode!=='habla') setMode('habla'); });
+document.getElementById('modeEscucha').addEventListener('click',()=>{ if(state.mode!=='escucha') setMode('escucha'); });
 document.getElementById('modeArmar').addEventListener('click',()=>{ if(state.mode!=='armar') setMode('armar'); });
+if(!window.speechSynthesis) document.getElementById('modeEscucha').style.display = 'none';
 document.getElementById('checkBtn').addEventListener('click',checkTiles);
 document.getElementById('revealBtn').addEventListener('click',()=>{ if(!revealed) reveal(); });
 document.getElementById('hintBtn').addEventListener('click',showHint);
@@ -1638,6 +1732,7 @@ document.addEventListener('keydown',e=>{
   }
   else if(e.key==='1' && !document.getElementById('gotBtn').disabled) document.getElementById('gotBtn').click();
   else if(e.key==='2' && !document.getElementById('missBtn').disabled) document.getElementById('missBtn').click();
+  else if((e.key==='r'||e.key==='R') && state.mode==='escucha') speakCurrent();
 });
 
 document.getElementById('scenBack').addEventListener('click',()=>{
@@ -1668,6 +1763,7 @@ document.getElementById('resetBtn').addEventListener('click',()=>{
 
 /* init */
 if(!SR && state.mode==='habla') state.mode = 'armar'; // no speech recognition → tiles are the working mode
+if(!window.speechSynthesis && state.mode==='escucha') state.mode = SR ? 'habla' : 'armar'; // no TTS → can't hear prompts
 renderCheatsheet();
 initMachine();
 renderScenarios();
