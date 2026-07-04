@@ -1189,8 +1189,10 @@ function showItem(){
     (esc ? 'ESCUCHA Y REPITE' : 'DILO EN ESPAÑOL') + (current.innerSc ? ' → ⛓ CADENA' : ' →');
   const promptEl = document.getElementById('dPrompt');
   if(esc){
-    promptEl.innerHTML = '<button class="btn mic" id="playBtn" type="button">🔊 Escuchar otra vez</button>';
+    promptEl.innerHTML = '<button class="btn mic" id="playBtn" type="button">🔊 Escuchar otra vez</button> ' +
+                         '<button class="btn" id="playSlowBtn" type="button">🐢 Más despacio</button>';
     document.getElementById('playBtn').addEventListener('click', speakCurrent);
+    document.getElementById('playSlowBtn').addEventListener('click', speakSlow);
     speakCurrent();
   } else {
     promptEl.textContent = '“' + current.en + '”';
@@ -1221,18 +1223,22 @@ function reveal(){
   a.style.display = ''; // armar hides it until reveal
   if(state.mode==='escucha'){ // now show what it meant, keep a small replay
     const promptEl = document.getElementById('dPrompt');
-    promptEl.innerHTML = '“' + current.en + '” <button class="backlink" id="playBtn" type="button">🔊 otra vez</button>';
+    promptEl.innerHTML = '“' + current.en + '” <button class="backlink" id="playBtn" type="button">🔊 otra vez</button> ' +
+                         '<button class="backlink" id="playSlowBtn" type="button">🐢 despacio</button>';
     document.getElementById('playBtn').addEventListener('click', speakCurrent);
+    document.getElementById('playSlowBtn').addEventListener('click', speakSlow);
   }
   setGrade(true);
 }
-function speakCurrent(){
+function speakCurrent(rate){
   if(!current || !window.speechSynthesis) return;
   const u = new SpeechSynthesisUtterance(current.es);
-  u.lang = state.dialect; u.rate = 0.9;
+  u.lang = state.dialect;
+  u.rate = typeof rate === 'number' ? rate : 0.9; // guard: click events land here as `rate`
   speechSynthesis.cancel();
   speechSynthesis.speak(u);
 }
+function speakSlow(){ speakCurrent(0.6); }
 function showHint(){
   hinted = true;
   const hint = document.getElementById('dHint');
@@ -1434,7 +1440,7 @@ function applyMode(){
   document.getElementById('dKeyhint').innerHTML = armar
     ? 'tap tiles to build the sentence · tap a placed tile to remove it · <b>enter</b> check/next · speaking unlocks mastery levels 4–5'
     : esc
-    ? 'keys: <b>space</b> mic · <b>r</b> 🔊 otra vez · <b>enter</b> reveal/next · <b>1</b> correct · <b>2</b> missed'
+    ? 'keys: <b>space</b> mic · <b>r</b> 🔊 otra vez · <b>s</b> 🐢 despacio · <b>enter</b> reveal/next · <b>1</b> correct · <b>2</b> missed'
     : 'keys: <b>space</b> mic · <b>enter</b> reveal/next · <b>1</b> correct · <b>2</b> missed';
 }
 
@@ -1733,6 +1739,7 @@ document.addEventListener('keydown',e=>{
   else if(e.key==='1' && !document.getElementById('gotBtn').disabled) document.getElementById('gotBtn').click();
   else if(e.key==='2' && !document.getElementById('missBtn').disabled) document.getElementById('missBtn').click();
   else if((e.key==='r'||e.key==='R') && state.mode==='escucha') speakCurrent();
+  else if((e.key==='s'||e.key==='S') && state.mode==='escucha') speakSlow();
 });
 
 document.getElementById('scenBack').addEventListener('click',()=>{
