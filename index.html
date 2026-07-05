@@ -815,9 +815,19 @@ function enGer(v){
     return w+'ing';
   });
 }
+/* Speech recognition transcribes numbers as digits ("a las 7") while answers spell them
+   out ("a las siete") — normalize digits to words so both sides compare equal */
+const NUM_WORDS = {'0':'cero','1':'uno','2':'dos','3':'tres','4':'cuatro','5':'cinco','6':'seis',
+  '7':'siete','8':'ocho','9':'nueve','10':'diez','11':'once','12':'doce','13':'trece','14':'catorce',
+  '15':'quince','16':'dieciseis','17':'diecisiete','18':'dieciocho','19':'diecinueve','20':'veinte',
+  '21':'veintiuno','22':'veintidos','23':'veintitres','24':'veinticuatro','25':'veinticinco',
+  '26':'veintiseis','27':'veintisiete','28':'veintiocho','29':'veintinueve','30':'treinta',
+  '40':'cuarenta','50':'cincuenta','60':'sesenta','70':'setenta','80':'ochenta','90':'noventa','100':'cien'};
 function normalize(s){
   return s.toLowerCase()
     .normalize('NFD').replace(/[̀-ͯ]/g,'')
+    .replace(/(\d{1,2}):00\b/g,'$1')
+    .replace(/\d+/g, m => NUM_WORDS[m] || m)
     .replace(/[¿?¡!.,;:"'()]/g,'')
     .replace(/\s+/g,' ').trim();
 }
@@ -1556,20 +1566,30 @@ function toggleScenario(){
 }
 function startScenRec(){
   scenRec = makeRecognizer({continuous:true});
+  /* Chrome re-delivers the same final result in several onresult events, so appending
+     per event duplicates lines. Rebuild the session text from the full result list every
+     time (idempotent) and commit it to scenFinal only when the session ends. */
+  let sessionFinal = '';
   scenRec.onresult = e=>{
-    let interim='';
-    for(let i=e.resultIndex;i<e.results.length;i++){
-      if(e.results[i].isFinal) scenFinal += e.results[i][0].transcript + ' ';
+    let fin='', interim='';
+    for(let i=0;i<e.results.length;i++){
+      if(e.results[i].isFinal) fin += e.results[i][0].transcript + ' ';
       else interim += e.results[i][0].transcript;
     }
+    sessionFinal = fin;
+    const shown = scenFinal + sessionFinal;
     const box = document.getElementById('spTranscript');
-    box.innerHTML = scenFinal + (interim?`<span class="interim">${interim}</span>`:'') || '<span class="placeholder">…</span>';
-    checkTargets(scenFinal + ' ' + interim);
+    box.innerHTML = shown + (interim?`<span class="interim">${interim}</span>`:'') || '<span class="placeholder">…</span>';
+    checkTargets(shown + ' ' + interim);
   };
-  scenRec.onend = ()=>{ if(scenRunning){ try{scenRec.start();}catch(e){} } };
+  scenRec.commit = ()=>{ scenFinal += sessionFinal; sessionFinal = ''; };
+  scenRec.onend = ()=>{
+    scenRec.commit();
+    if(scenRunning){ try{scenRec.start();}catch(e){} }
+  };
   try{ scenRec.start(); }catch(e){}
 }
-function stopScenRec(){ if(scenRec){ scenRec.onend=null; try{scenRec.stop();}catch(e){} scenRec=null; } }
+function stopScenRec(){ if(scenRec){ scenRec.commit(); scenRec.onend=null; try{scenRec.stop();}catch(e){} scenRec=null; } }
 function checkTargets(text){
   const norm = normalize(text);
   scen.targets.forEach(t=>{
