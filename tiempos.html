@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Tiempos — domina los 7 tiempos que importan</title>
+<style>
+:root{
+  --bg:#12141c; --card:#1c1f2b; --card2:#242838; --ink:#e8eaf2; --dim:#9aa0b4; --line:#32374a;
+  --accent:#e8c34a;
+  --pret:#e05252; --imp:#e08a3c; --subj:#9b6bd6; --perf:#4caf78; --si:#4a86d6; --fut:#2fb3ad; --cmd:#d6b93c;
+  --ok:#4caf78; --bad:#e05252;
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;font-size:16px}
+button{font-family:inherit}
+header{padding:14px 16px 6px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+header h1{margin:0;font-size:1.4rem;letter-spacing:.5px}
+header h1 span{color:var(--accent)}
+.hero{color:var(--dim);font-size:.8rem}
+.hero b{color:var(--accent)}
+.hlinks{margin-left:auto;font-size:.8rem;display:flex;gap:10px;align-items:center}
+.hlinks a{color:var(--dim);text-decoration:none;border-bottom:1px dotted var(--dim)}
+#gearBtn{background:none;border:none;color:var(--dim);font-size:1.1rem;cursor:pointer;padding:4px}
+nav{display:flex;gap:2px;padding:4px 8px;position:sticky;top:0;background:var(--bg);z-index:20;border-bottom:1px solid var(--line)}
+nav button{flex:1;background:none;border:none;color:var(--dim);padding:10px 2px;font-size:.85rem;cursor:pointer;border-radius:8px;min-height:48px}
+nav button.on{color:var(--ink);background:var(--card2);font-weight:600}
+main{padding:12px;max-width:760px;margin:0 auto;padding-bottom:90px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+.tcard{border-left:5px solid var(--tc,#888)}
+.tchip{display:inline-block;padding:2px 10px;border-radius:99px;font-size:.72rem;font-weight:700;color:#12141c;background:var(--tc,#888);vertical-align:middle}
+h2{font-size:1.05rem;margin:.2rem 0 .5rem}
+h3{font-size:.92rem;margin:.8rem 0 .3rem;color:var(--dim);text-transform:uppercase;letter-spacing:.06em}
+table{border-collapse:collapse;width:100%;font-size:.9rem;margin:6px 0}
+td,th{border:1px solid var(--line);padding:5px 8px;text-align:left}
+th{color:var(--dim);font-weight:600;background:var(--card2)}
+.muted{color:var(--dim);font-size:.85rem}
+.small{font-size:.8rem}
+.pill{display:inline-block;background:var(--card2);border:1px solid var(--line);border-radius:99px;padding:4px 12px;margin:3px 3px 0 0;font-size:.85rem}
+.btn{background:var(--card2);border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:12px 18px;font-size:.95rem;cursor:pointer;min-height:48px}
+.btn.primary{background:var(--accent);color:#12141c;font-weight:700;border-color:var(--accent)}
+.btn.sm{padding:7px 12px;min-height:40px;font-size:.85rem}
+.btn:disabled{opacity:.4}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.chip{border:1.5px solid var(--tc,#888);color:var(--tc,#888);background:none;border-radius:99px;padding:7px 13px;font-size:.8rem;font-weight:700;cursor:pointer;min-height:40px}
+.chip.on{background:var(--tc,#888);color:#12141c}
+.mode{border:1px solid var(--line);color:var(--dim);background:none;border-radius:10px;padding:9px 14px;cursor:pointer;font-size:.85rem;min-height:44px}
+.mode.on{background:var(--card2);color:var(--ink);font-weight:700;border-color:var(--accent)}
+.drillEN{font-size:1.25rem;line-height:1.45;margin:14px 0}
+.drillES{font-size:1.3rem;line-height:1.45;margin:10px 0;color:var(--accent)}
+.feedback{padding:10px 12px;border-radius:10px;margin:10px 0;font-size:.95rem}
+.feedback.ok{background:rgba(76,175,120,.15);border:1px solid var(--ok)}
+.feedback.bad{background:rgba(224,82,82,.12);border:1px solid var(--bad)}
+.micFab{position:fixed;bottom:76px;left:50%;transform:translateX(-50%);width:68px;height:68px;border-radius:50%;background:var(--accent);border:none;font-size:1.7rem;cursor:pointer;box-shadow:0 4px 18px rgba(0,0,0,.5);z-index:30;display:none}
+.micFab.listening{background:var(--bad);animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{transform:translateX(-50%) scale(1)}50%{transform:translateX(-50%) scale(1.08)}}
+.tiles{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.tile{background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:10px 14px;font-size:1.05rem;cursor:pointer;min-height:46px;color:var(--ink)}
+.tile.used{opacity:.25;pointer-events:none}
+.answerZone{min-height:52px;border:1.5px dashed var(--line);border-radius:12px;padding:8px;display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
+.answerZone .tile{background:#2c3145;border-color:var(--accent)}
+.bar{height:10px;background:var(--card2);border-radius:99px;overflow:hidden;margin:4px 0 10px}
+.bar i{display:block;height:100%;background:var(--tc,#888);border-radius:99px}
+.transcript{background:var(--card2);border-radius:12px;padding:12px;min-height:110px;font-size:1.05rem;line-height:1.7;margin:10px 0}
+.transcript span.hit{padding:1px 5px;border-radius:6px;color:#12141c;font-weight:700}
+.timer{font-size:2rem;font-weight:700;font-variant-numeric:tabular-nums}
+.blankBtn{border:1.5px solid var(--line);background:var(--card2);color:var(--ink);border-radius:10px;padding:9px 13px;margin:3px;font-size:1rem;cursor:pointer;min-height:44px}
+.blankBtn.sel{border-color:var(--accent);background:#2c3145}
+.blankBtn.right{border-color:var(--ok);background:rgba(76,175,120,.2)}
+.blankBtn.wrong{border-color:var(--bad);background:rgba(224,82,82,.15)}
+.why{background:rgba(232,195,74,.08);border-left:3px solid var(--accent);padding:8px 12px;border-radius:0 8px 8px 0;margin:10px 0;font-size:.9rem}
+.contrastSent{font-size:1.2rem;line-height:2;margin:12px 0}
+.decide{display:grid;gap:6px;margin:8px 0}
+.decide div{background:var(--card2);border-radius:8px;padding:8px 10px;font-size:.85rem}
+.decide b{color:var(--tc2,#fff)}
+dialog{background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:14px;max-width:420px;width:92vw}
+dialog::backdrop{background:rgba(0,0,0,.6)}
+select{background:var(--card2);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px;font-size:.95rem;width:100%}
+.statgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.statbox{background:var(--card2);border-radius:12px;padding:12px;text-align:center}
+.statbox .n{font-size:1.6rem;font-weight:700;color:var(--accent)}
+.formsTbl td:first-child{color:var(--dim);width:34%}
+@media (max-width:700px){
+  nav{position:fixed;bottom:0;top:auto;left:0;right:0;border-top:1px solid var(--line);border-bottom:none;padding:4px 4px calc(4px + env(safe-area-inset-bottom))}
+  main{padding-bottom:150px}
+  .micFab{bottom:96px}
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>⏳ <span>Tiempos</span></h1>
+  <div class="hero" id="hero"></div>
+  <div class="hlinks"><a href="index.html">Andamio&nbsp;→</a><button id="gearBtn" title="Ajustes">⚙️</button></div>
+</header>
+<nav id="nav"></nav>
+<main id="view"></main>
+<button class="micFab" id="micFab">🎤</button>
+
+<dialog id="dlg">
+  <h2>Ajustes</h2>
+  <p class="muted small">Dialecto del micrófono (y de la voz):</p>
+  <select id="dialectSel">
+    <option value="es-MX">Español (México)</option>
+    <option value="es-ES">Español (España)</option>
+    <option value="es-US">Español (EE. UU.)</option>
+    <option value="es-AR">Español (Argentina)</option>
+    <option value="es-CO">Español (Colombia)</option>
+  </select>
+  <p class="muted small">Con dialectos latinoamericanos, «vosotros» aparece menos en los drills (pero se enseña igual).</p>
+  <div class="row" style="justify-content:flex-end;margin-top:10px"><button class="btn sm" onclick="dlg.close()">Cerrar</button></div>
+</dialog>
+
+<script>
+'use strict';
+/* ================= DATA ================= */
+const TENSES = {
+  pret:{name:'Pretérito', color:'var(--pret)', when:'Acciones terminadas, una vez: «Ayer compré pan.»'},
+  imp:{name:'Imperfecto', color:'var(--imp)', when:'Fondo, hábitos, descripciones: «Antes trabajaba mucho.»'},
+  subj:{name:'Subjuntivo', color:'var(--subj)', when:'Después de disparadores: «Quiero que vengas.»'},
+  perf:{name:'Perfecto', color:'var(--perf)', when:'Periodo aún abierto: «Hoy he comido mucho.»'},
+  si:{name:'Si… (irreal)', color:'var(--si)', when:'Hipótesis: «Si tuviera tiempo, iría.»'},
+  fut:{name:'Futuro', color:'var(--fut)', when:'Predicciones y promesas: «Mañana trabajaré.»'},
+  cmd:{name:'Imperativo', color:'var(--cmd)', when:'Órdenes y peticiones: «¡Dime la verdad!»'}
+};
+const TKEYS = Object.keys(TENSES);
+const PERS = [
+  {es:'yo',en:'I'},{es:'tú',en:'you'},{es:'él/ella',en:'he/she'},
+  {es:'nosotros',en:'we'},{es:'vosotros',en:'you all'},{es:'ellos/ellas',en:'they'}
+];
+const CL = ['me','te','se','nos','os','se']; // reflexive clitics
+const OBJ = ['me','you','him','us','you all','them'];
+
+// en: b=base p=past pp=participle s=3rd-sg
+const VERBS = [
+ {inf:'ser', en:{b:'be'}, be:true, comps:[['más paciente','more patient'],['amable','kind'],['feliz','happy']],
+  blocks:['pret'], impFull:['era','eras','era','éramos','erais','eran'],
+  subjFull:['sea','seas','sea','seamos','seáis','sean'], pp:'sido', cmdTu:'sé',
+  pretFull:['fui','fuiste','fue','fuimos','fuisteis','fueron'], pat:'irregular total'},
+ {inf:'estar', en:{b:'be'}, be:true, comps:[['en casa','at home'],['cansado','tired'],['en el trabajo','at work']],
+  blocks:['cmd'], pretFull:['estuve','estuviste','estuvo','estuvimos','estuvisteis','estuvieron'],
+  subjFull:['esté','estés','esté','estemos','estéis','estén'], pat:'raíz -uv (estuve)'},
+ {inf:'ir', en:{b:'go',p:'went',pp:'gone',s:'goes'}, comps:[['a la tienda','to the store'],['al trabajo','to work'],['a España','to Spain']],
+  pretFull:['fui','fuiste','fue','fuimos','fuisteis','fueron'], impFull:['iba','ibas','iba','íbamos','ibais','iban'],
+  subjFull:['vaya','vayas','vaya','vayamos','vayáis','vayan'], pp:'ido', cmdTu:'ve', pat:'irregular total'},
+ {inf:'tener', en:{b:'have',p:'had',pp:'had',s:'has'}, comps:[['mucho trabajo','a lot of work'],['tiempo libre','free time'],['una reunión','a meeting']],
+  blocks:['cmd'], pretFull:['tuve','tuviste','tuvo','tuvimos','tuvisteis','tuvieron'], subjStem:'teng', futStem:'tendr', pat:'raíz -uv (tuve)'},
+ {inf:'hacer', en:{b:'do',p:'did',pp:'done',s:'does'}, comps:[['la tarea','the homework'],['ejercicio','exercise'],['todo','everything']],
+  pretFull:['hice','hiciste','hizo','hicimos','hicisteis','hicieron'], subjStem:'hag', futStem:'har', pp:'hecho', cmdTu:'haz', pat:'raíz -i (hice)'},
+ {inf:'poder', en:{b:'be able to'}, modal:true, comps:[['descansar','rest'],['ayudar','help'],['salir temprano','leave early']],
+  blocks:['imp','cmd'], pretFull:['pude','pudiste','pudo','pudimos','pudisteis','pudieron'],
+  subjFull:['pueda','puedas','pueda','podamos','podáis','puedan'], futStem:'podr', pat:'raíz -u (pude)'},
+ {inf:'querer', en:{b:'want',p:'wanted',pp:'wanted',s:'wants'}, comps:[['comer algo','to eat something'],['ir al cine','to go to the movies'],['aprender más','to learn more']],
+  blocks:['cmd'], pretFull:['quise','quisiste','quiso','quisimos','quisisteis','quisieron'],
+  subjFull:['quiera','quieras','quiera','queramos','queráis','quieran'], futStem:'querr', pat:'raíz -i (quise)'},
+ {inf:'decir', en:{b:'say',p:'said',pp:'said',s:'says'}, comps:[['la verdad','the truth'],['algo importante','something important'],['eso','that']],
+  pretFull:['dije','dijiste','dijo','dijimos','dijisteis','dijeron'], subjStem:'dig', futStem:'dir', pp:'dicho', cmdTu:'di', pat:'raíz -j (dije)'},
+ {inf:'dar', en:{b:'give',p:'gave',pp:'given',s:'gives'}, comps:[['un regalo','a gift'],['las gracias','thanks'],['un ejemplo','an example']],
+  pretFull:['di','diste','dio','dimos','disteis','dieron'], subjFull:['dé','des','dé','demos','deis','den'], cmdTu:'da', pat:'corto (di, dio)'},
+ {inf:'ver', en:{b:'see',p:'saw',pp:'seen',s:'sees'}, comps:[['la película','the movie'],['a mis amigos','my friends'],['las noticias','the news']],
+  blocks:['cmd'], pretFull:['vi','viste','vio','vimos','visteis','vieron'], impFull:['veía','veías','veía','veíamos','veíais','veían'],
+  subjStem:'ve', pp:'visto', pat:'corto (vi, vio)'},
+ {inf:'saber', en:{b:'know',p:'knew',pp:'known',s:'knows'}, comps:[['la respuesta','the answer'],['la verdad','the truth'],['qué hacer','what to do']],
+  blocks:['cmd'], pretFull:['supe','supiste','supo','supimos','supisteis','supieron'],
+  subjFull:['sepa','sepas','sepa','sepamos','sepáis','sepan'], futStem:'sabr', pretEn:{b:'find out',p:'found out'}, pat:'raíz -u (supe)'},
+ {inf:'venir', en:{b:'come',p:'came',pp:'come',s:'comes'}, comps:[['a la fiesta','to the party'],['a mi casa','to my house'],['temprano','early']],
+  pretFull:['vine','viniste','vino','vinimos','vinisteis','vinieron'], subjStem:'veng', futStem:'vendr', cmdTu:'ven', pat:'raíz -i (vine)'},
+ {inf:'poner', en:{b:'put',p:'put',pp:'put',s:'puts'}, comps:[['las llaves aquí','the keys here'],['los libros allí','the books there'],['todo en su lugar','everything in its place']],
+  pretFull:['puse','pusiste','puso','pusimos','pusisteis','pusieron'], subjStem:'pong', futStem:'pondr', pp:'puesto', cmdTu:'pon', pat:'raíz -u (puse)'},
+ {inf:'hablar', en:{b:'speak',p:'spoke',pp:'spoken',s:'speaks'}, comps:[['con mi familia','with my family'],['español','Spanish'],['del problema','about the problem']],
+  cmdTu:'habla', pat:'-ar regular'},
+ {inf:'comer', en:{b:'eat',p:'ate',pp:'eaten',s:'eats'}, comps:[['algo','something'],['en casa','at home'],['con amigos','with friends']],
+  cmdTu:'come', pat:'-er regular'},
+ {inf:'vivir', en:{b:'live',p:'lived',pp:'lived',s:'lives'}, comps:[['en España','in Spain'],['aquí','here'],['con mi familia','with my family']],
+  blocks:['cmd'], pat:'-ir regular'},
+ {inf:'trabajar', en:{b:'work',p:'worked',pp:'worked',s:'works'}, comps:[['mucho','a lot'],['en la oficina','at the office'],['menos','less']],
+  cmdTu:'trabaja', pat:'-ar regular'},
+ {inf:'comprar', en:{b:'buy',p:'bought',pp:'bought',s:'buys'}, comps:[['pan','bread'],['un coche','a car'],['los boletos','the tickets']],
+  cmdTu:'compra', pat:'-ar regular'},
+ {inf:'salir', en:{b:'leave',p:'left',pp:'left',s:'leaves'}, comps:[['temprano','early'],['de casa','the house'],['del trabajo','work']],
+  futStem:'saldr', subjStem:'salg', cmdTu:'sal', pat:'-ir (futuro saldr-)'},
+ {inf:'llegar', en:{b:'arrive',p:'arrived',pp:'arrived',s:'arrives'}, comps:[['tarde','late'],['a tiempo','on time'],['a casa','home']],
+  pretFull:['llegué','llegaste','llegó','llegamos','llegasteis','llegaron'], subjStem:'llegu', cmdTu:'llega', pat:'-ar (ortografía -gué)'},
+ {inf:'buscar', en:{b:'look for',p:'looked for',pp:'looked for',s:'looks for'}, comps:[['las llaves','the keys'],['trabajo','a job'],['un apartamento','an apartment']],
+  pretFull:['busqué','buscaste','buscó','buscamos','buscasteis','buscaron'], subjStem:'busqu', cmdTu:'busca', pat:'-ar (ortografía -qué)'},
+ {inf:'sentirse', raw:'sentir', refl:true, en:{b:'feel',p:'felt',pp:'felt',s:'feels'}, comps:[['bien','good'],['mal','bad'],['mejor','better']],
+  blocks:['cmd'], pretFull:['sentí','sentiste','sintió','sentimos','sentisteis','sintieron'],
+  subjFull:['sienta','sientas','sienta','sintamos','sintáis','sientan'], pat:'e→ie / e→i (siento, sintió)'},
+ {inf:'dormir', en:{b:'sleep',p:'slept',pp:'slept',s:'sleeps'}, comps:[['bien','well'],['ocho horas','eight hours'],['mucho','a lot']],
+  pretFull:['dormí','dormiste','durmió','dormimos','dormisteis','durmieron'],
+  subjFull:['duerma','duermas','duerma','durmamos','durmáis','duerman'], cmdTu:'duerme', pat:'o→ue / o→u (duermo, durmió)'}
+];
+const HABER = ['he','has','ha','hemos','habéis','han'];
+
+/* -------- conjugation engine (regulars generated, irregulars stored) -------- */
+const AC = {a:'á',e:'é',i:'í',o:'ó',u:'ú'};
+function accentLastVowel(s){
+  for(let i=s.length-1;i>=0;i--){ if(AC[s[i]]) return s.slice(0,i)+AC[s[i]]+s.slice(i+1); }
+  return s;
+}
+function conjugate(v){
+  const base = v.raw || v.inf;
+  const stem = base.slice(0,-2), end = base.slice(-2);
+  const f = {};
+  // pretérito
+  f.pret = v.pretFull || (end==='ar'
+    ? ['é','aste','ó','amos','asteis','aron'].map(e=>stem+e)
+    : ['í','iste','ió','imos','isteis','ieron'].map(e=>stem+e));
+  // imperfecto
+  f.imp = v.impFull || (end==='ar'
+    ? ['aba','abas','aba','ábamos','abais','aban'].map(e=>stem+e)
+    : ['ía','ías','ía','íamos','íais','ían'].map(e=>stem+e));
+  // futuro & condicional
+  const fs = v.futStem || base;
+  f.fut  = ['é','ás','á','emos','éis','án'].map(e=>fs+e);
+  f.cond = ['ía','ías','ía','íamos','íais','ían'].map(e=>fs+e);
+  // subjuntivo presente
+  if(v.subjFull) f.subj = v.subjFull;
+  else{
+    const ss = v.subjStem || stem;
+    f.subj = (end==='ar'
+      ? ['e','es','e','emos','éis','en']
+      : ['a','as','a','amos','áis','an']).map(e=>ss+e);
+  }
+  // imperfecto de subjuntivo (from 3pl pretérito)
+  const b3 = f.pret[5].slice(0,-3); // drop 'ron'
+  f.isubj = ['ra','ras','ra','ramos','rais','ran'].map((e,i)=> i===3 ? accentLastVowel(b3)+e : b3+e);
+  // participio
+  f.pp = v.pp || (end==='ar' ? stem+'ado' : stem+'ido');
+  // imperativo: [tú, usted, nosotros, vosotros, ustedes]
+  f.cmd = v.cmdTu ? [v.cmdTu, f.subj[2], f.subj[3], base.slice(0,-1)+'d', f.subj[5]] : null;
+  return f;
+}
+VERBS.forEach(v=>{ v.f = conjugate(v); });
+
+const CMD_PERS = [
+  {es:'tú', si:1, en:t=>cap(t)+'!'},
+  {es:'usted', si:2, en:t=>cap(t)+'! (formal)'},
+  {es:'nosotros', si:3, en:t=>"Let's "+t+'!'},
+  {es:'vosotros', si:4, en:t=>cap(t)+', all of you!'},
+  {es:'ustedes', si:5, en:t=>cap(t)+', all of you! (formal)'}
+];
+
+const T_PRET = [['Ayer','Yesterday'],['Anoche','Last night'],['La semana pasada','Last week'],['El año pasado','Last year']];
+const T_IMP  = [['Antes','Before'],['Todos los días','Every day'],['En aquel entonces','Back then']];
+const T_FUT  = [['Mañana','Tomorrow'],['Algún día','Someday'],['El próximo año','Next year'],['Pronto','Soon']];
+const T_PERF = [['Hoy','today'],['Esta semana','this week']];
+
+const TRIGGERS = [
+  {es:'Quiero que', pers:[1,2,3,4,5], type:'want'},
+  {es:'Espero que', pers:[1,2,3,4,5], type:'hope'},
+  {es:'No creo que', pers:[1,2,3,4,5], type:'doubt'},
+  {es:'Es posible que', pers:[0,1,2,3,4,5], type:'maybe'}
+];
+
+const SI_COND = [ // [inf, es-comp, en "If I ___ ..."]
+  ['tener','más dinero','had more money'],
+  ['tener','más tiempo','had more time'],
+  ['poder','hacerlo','could do it'],
+  ['ser','rico','were rich'],
+  ['vivir','en España','lived in Spain'],
+  ['saber','la respuesta','knew the answer'],
+  ['estar','de vacaciones','were on vacation']
+];
+const SI_RES = [ // [inf, es-comp, en "... would ___"]
+  ['comprar','una casa grande','buy a big house'],
+  ['ir','a España','go to Spain'],
+  ['trabajar','menos','work less'],
+  ['salir','más con mis amigos','go out more with my friends'],
+  ['hablar','mejor español','speak better Spanish'],
+  ['ser','más feliz','be happier'],
+  ['tener','más tiempo libre','have more free time'],
+  ['dormir','más','sleep more']
+];
+
+const CONTRASTS = [
+ {t:'pi', es:'{0} por la calle cuando {1} a mi amigo.', en:'I was walking down the street when I saw my friend.', b:[{o:['Caminaba','Caminé'],a:0},{o:['vi','veía'],a:0}], why:'Acción de fondo → imperfecto; el evento que la interrumpe → pretérito.'},
+ {t:'pi', es:'Cuando {0} niño, {1} en España.', en:'When I was a kid, we lived in Spain.', b:[{o:['era','fui'],a:0},{o:['vivíamos','vivimos'],a:0}], why:'«Cuando era niño» pinta la escena: descripciones y situaciones continuas → imperfecto.'},
+ {t:'pi', es:'Ayer {0} pan y {1} en casa.', en:'Yesterday I bought bread and we ate at home.', b:[{o:['compré','compraba'],a:0},{o:['comimos','comíamos'],a:0}], why:'«Ayer» + acciones terminadas de una vez → pretérito.'},
+ {t:'pi', es:'Antes ella {0} mucho, pero ayer no {1}.', en:"She used to work a lot before, but yesterday she didn't work.", b:[{o:['trabajaba','trabajó'],a:0},{o:['trabajó','trabajaba'],a:0}], why:'«Antes» (hábito) → imperfecto; «ayer» (un día concreto) → pretérito.'},
+ {t:'pi', es:'Yo {0} en casa cuando tú {1}.', en:'I was at home when you arrived.', b:[{o:['estaba','estuve'],a:0},{o:['llegaste','llegabas'],a:0}], why:'Estado en curso → imperfecto; el evento que ocurre dentro → pretérito.'},
+ {t:'pi', es:'Todos los días él {0} ocho horas.', en:'Every day he used to sleep eight hours.', b:[{o:['dormía','durmió'],a:0}], why:'Hábito repetido («todos los días») → imperfecto.'},
+ {t:'pi', es:'Anoche no {0} bien.', en:"Last night I didn't sleep well.", b:[{o:['dormí','dormía'],a:0}], why:'Una noche concreta y terminada → pretérito.'},
+ {t:'pi', es:'Ellos {0} salir, pero no {1}.', en:"They wanted to go out, but they couldn't.", b:[{o:['querían','quisieron'],a:0},{o:['pudieron','podían'],a:0}], why:'Deseo en curso → imperfecto; el intento fallido (resultado) → pretérito.'},
+ {t:'sub', es:'Creo que ella {0} mañana.', en:"I think she's coming tomorrow.", b:[{o:['viene','venga'],a:0}], why:'«Creer» afirmativo expresa certeza → indicativo. Solo «no creo que» lleva subjuntivo.'},
+ {t:'sub', es:'No creo que ella {0} mañana.', en:"I don't think she'll come tomorrow.", b:[{o:['venga','viene'],a:0}], why:'Duda o negación («no creo que») → subjuntivo.'},
+ {t:'sub', es:'Quiero que tú {0} con él.', en:'I want you to speak with him.', b:[{o:['hables','hablas'],a:0}], why:'Querer que otra persona haga algo → subjuntivo después de «que».'},
+ {t:'sub', es:'Sé que tú {0} razón.', en:"I know you're right.", b:[{o:['tienes','tengas'],a:0}], why:'«Saber» afirma un hecho → indicativo.'},
+ {t:'sub', es:'Es posible que {0} tarde.', en:"It's possible we'll arrive late.", b:[{o:['lleguemos','llegamos'],a:0}], why:'Posibilidad, no certeza → subjuntivo.'},
+ {t:'sub', es:'Espero que usted {0} venir.', en:'I hope you can come.', b:[{o:['pueda','puede'],a:0}], why:'«Esperar que» (deseo) → subjuntivo.'},
+ {t:'sic', es:'Si {0} tiempo mañana, voy.', en:"If I have time tomorrow, I'll go.", b:[{o:['tengo','tuviera'],a:0}], why:'Condición real y probable → presente de indicativo.'},
+ {t:'sic', es:'Si {0} más dinero, compraría una casa.', en:'If I had more money, I would buy a house.', b:[{o:['tuviera','tendría'],a:0}], why:'Hipótesis → «si» + imperfecto de subjuntivo. Nunca «si tendría»: el condicional va en la otra mitad.'},
+ {t:'sic', es:'Si tú {0}, ¿vendrías?', en:'If you could, would you come?', b:[{o:['pudieras','podrías'],a:0}], why:'La cláusula con «si» lleva imperfecto de subjuntivo; el condicional queda fuera.'},
+ {t:'sic', es:'Si él {0} aquí, te ayudaría.', en:'If he were here, he would help you.', b:[{o:['estuviera','estaría'],a:0}], why:'Situación hipotética → si + estuviera; el resultado lleva el condicional.'},
+ {t:'sic', es:'Si {0} ahora, llegamos a tiempo.', en:'If we leave now, we arrive on time.', b:[{o:['salimos','saliéramos'],a:0}], why:'Plan real y factible → presente de indicativo.'},
+ {t:'pp', es:'Hoy {0} mucho.', en:'Today I have eaten a lot.', b:[{o:['he comido','comí'],a:0}], why:'Periodo aún abierto («hoy») → pretérito perfecto.'},
+ {t:'pp', es:'Ayer {0} mucho.', en:'Yesterday I ate a lot.', b:[{o:['comí','he comido'],a:0}], why:'Periodo cerrado («ayer») → pretérito.'},
+ {t:'pp', es:'¿Todavía no {0} la tarea?', en:"Haven't you done the homework yet?", b:[{o:['has hecho','hiciste'],a:0}], why:'«Todavía no» (aún abierto) → pretérito perfecto.'},
+ {t:'pp', es:'La semana pasada ellos {0} a España.', en:'Last week they went to Spain.', b:[{o:['fueron','han ido'],a:0}], why:'«La semana pasada» ya terminó → pretérito.'},
+ {t:'pp', es:'Esta semana ella {0} mucho.', en:'This week she has worked a lot.', b:[{o:['ha trabajado','trabajó'],a:0}], why:'«Esta semana» sigue en curso → pretérito perfecto.'}
+];
+const CONTRAST_NAMES = {pi:'Pretérito vs Imperfecto', sub:'¿Subjuntivo o indicativo?', sic:'Si real vs irreal', pp:'¿Perfecto o pretérito?'};
+
+const SCENARIOS = [
+  {t:'Cuéntame tu día de ayer', en:'Tell me about your day yesterday', tenses:['pret','imp'], secs:90},
+  {t:'¿Qué has hecho esta semana?', en:'What have you done this week?', tenses:['perf'], secs:60},
+  {t:'Tu vida a los diez años', en:'Your life at age ten', tenses:['imp'], secs:75},
+  {t:'Si ganaras la lotería…', en:'If you won the lottery…', tenses:['si'], secs:75},
+  {t:'Dale instrucciones a un amigo para llegar a tu casa', en:'Give a friend directions to your house', tenses:['cmd'], secs:75},
+  {t:'Tus planes y promesas para el próximo año', en:'Your plans and promises for next year', tenses:['fut'], secs:75}
+];
+
+/* ================= STATE ================= */
+const LS = (k,d)=>{ try{ const v=localStorage.getItem('tiempos.'+k); return v?JSON.parse(v):d; }catch(e){ return d; } };
+const SAVE = (k,v)=>{ try{ localStorage.setItem('tiempos.'+k, JSON.stringify(v)); }catch(e){} };
+let srs = LS('srs',{});          // "tense|inf" -> box 1..5
+let csrs = LS('csrs',{});        // contrast idx -> box
+let stats = LS('stats',{spoken:0,answered:0,correct:0,days:{},tense:{}});
+let settings = LS('set',{dialect:'es-MX'});
+let activeTenses = LS('ft', TKEYS.slice());
+let forjaMode = null; // set on first render
+let tab = 'aprende';
+let currentDrill = null, currentContrast = null;
+
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+const hasMic = !!SR;
+const hasTTS = !!window.speechSynthesis;
+const isTouch = ('ontouchstart' in window);
+
+/* ================= HELPERS ================= */
+function cap(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
+function rnd(a){ return a[Math.floor(Math.random()*a.length)]; }
+function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+const NUMW = {'1':'uno','2':'dos','3':'tres','4':'cuatro','5':'cinco','6':'seis','7':'siete','8':'ocho','9':'nueve','10':'diez','11':'once','12':'doce'};
+function norm(s){
+  return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'')
+   .replace(/[¿?¡!.,;:'"()]/g,'').replace(/\b(\d+)\b/g, m=>NUMW[m]||m)
+   .replace(/\s+/g,' ').trim();
+}
+function esVoice(){
+  if(!hasTTS) return null;
+  const vs = speechSynthesis.getVoices().filter(v=>v.lang && v.lang.toLowerCase().startsWith('es'));
+  return vs.find(v=>v.lang===settings.dialect) || vs.find(v=>v.lang.startsWith(settings.dialect.slice(0,2))) || vs[0] || null;
+}
+function speak(text, rate){
+  if(!hasTTS) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text.replace(/[¡!¿?]/g,''));
+  u.lang = settings.dialect; u.rate = rate||0.92;
+  const v = esVoice(); if(v) u.voice = v;
+  speechSynthesis.speak(u);
+}
+function today(){ return new Date().toISOString().slice(0,10); }
+function bump(ok, tense, spoken, tileMode){
+  stats.answered++; if(ok) stats.correct++;
+  if(spoken) stats.spoken++;
+  stats.days[today()] = (stats.days[today()]||0)+1;
+  const t = stats.tense[tense] = stats.tense[tense]||{a:0,c:0};
+  t.a++; if(ok) t.c++;
+  SAVE('stats',stats);
+  if(currentDrill){
+    const key = tense+'|'+currentDrill.v.inf;
+    let box = srs[key]||1;
+    if(ok){ box = Math.min(box+1, tileMode?3:5); } else { box = 1; }
+    srs[key]=box; SAVE('srs',srs);
+  }
+}
+function allowed(v,t){
+  if(v.inf==='haber') return false;
+  if(v.blocks && v.blocks.includes(t)) return false;
+  if(t==='cmd' && !v.f.cmd) return false;
+  if(t==='si') return false; // si uses curated lists
+  return true;
+}
+function pickPerson(persList){
+  const vosW = settings.dialect==='es-ES' ? 1 : 0.15;
+  const pool = [];
+  persList.forEach(p=>{ const w = (p===4)? vosW : 1; if(Math.random()<w) pool.push(p); });
+  return pool.length? rnd(pool) : rnd(persList.filter(p=>p!==4));
+}
+function pickCard(tense){
+  const vs = VERBS.filter(v=>allowed(v,tense));
+  const weighted = [];
+  vs.forEach(v=>{
+    const box = srs[tense+'|'+v.inf]||1;
+    for(let i=0;i<(6-box);i++) weighted.push(v);
+  });
+  return rnd(weighted.length?weighted:vs);
+}
+function bePast(p){ return (p===0||p===2)?'was':'were'; }
+function bePres(p){ return p===0?'am':(p===2?'is':'are'); }
+function enS(v,p){ // simple-present form for 3sg agreement
+  if(v.be) return bePres(p);
+  if(v.modal) return 'can';
+  return p===2 ? (v.en.s||v.en.b+'s') : v.en.b;
+}
+
+/* ================= DRILL GENERATOR ================= */
+function genDrill(){
+  const tense = rnd(activeTenses);
+  if(tense==='si') return genSi();
+  if(tense==='subj') return genSubj();
+  if(tense==='cmd') return genCmd();
+  const v = pickCard(tense);
+  const p = pickPerson([0,1,2,3,4,5]);
+  const c = rnd(v.comps);
+  const she = Math.random()<0.5;
+  const pron = p===2 ? (she?'she':'he') : PERS[p].en;
+  const vp = f => (v.refl? CL[p]+' ':'') + f;
+  let es='', en='', verbPhrase='';
+
+  if(tense==='pret'){
+    const t = rnd(T_PRET);
+    const form = vp(v.f.pret[p]);
+    const eb = (v.pretEn&&v.pretEn.b)||v.en.b, ep=(v.pretEn&&v.pretEn.p)||v.en.p;
+    let variant = Math.random()<0.5?'aff':(Math.random()<0.5?'neg':'q');
+    if(v.modal && variant==='q') variant='aff';
+    if(variant==='aff'){ es = t[0]+' '+form+' '+c[0]+'.'; en = t[1]+' '+pron+' '+(v.be?bePast(p):(v.modal?'managed to':ep))+' '+c[1]+'.'; }
+    else if(variant==='neg'){ es = t[0]+' no '+form+' '+c[0]+'.'; en = t[1]+' '+pron+' '+(v.be?bePast(p)+"n't":(v.modal?"couldn't":"didn't "+eb))+' '+c[1]+'.'; }
+    else { es = '¿'+cap(form)+' '+c[0]+' '+t[0].toLowerCase()+'?'; en = (v.be?cap(bePast(p))+' '+pron:('Did '+pron+' '+eb))+' '+c[1]+' '+t[1].toLowerCase()+'?'; }
+    verbPhrase = (variant==='neg'?'no ':'')+form;
+  }
+  else if(tense==='imp'){
+    const t = rnd(T_IMP);
+    const form = vp(v.f.imp[p]);
+    const variant = Math.random()<0.7?'aff':'neg';
+    if(variant==='aff'){ es = t[0]+' '+form+' '+c[0]+'.'; en = t[1]+', '+pron+' used to '+v.en.b+' '+c[1]+'.'; }
+    else { es = t[0]+' no '+form+' '+c[0]+'.'; en = t[1]+', '+pron+" didn't use to "+v.en.b+' '+c[1]+'.'; }
+    verbPhrase = (variant==='neg'?'no ':'')+form;
+  }
+  else if(tense==='perf'){
+    const hv = p===2?'has':'have';
+    const marker = rnd(['t','t','ya','todavia']);
+    const form = (v.refl? CL[p]+' ':'')+HABER[p]+' '+v.f.pp;
+    const enVP = v.be?'been':(v.modal?'been able to':v.en.pp);
+    if(marker==='ya'){ es = 'Ya '+form+' '+c[0]+'.'; en = cap(pron)+' '+hv+' already '+enVP+' '+c[1]+'.'; }
+    else if(marker==='todavia'){ es = 'Todavía no '+form+' '+c[0]+'.'; en = cap(pron)+' '+hv+"n't "+enVP+' '+c[1]+' yet.'; }
+    else{
+      const t = rnd(T_PERF);
+      const variant = Math.random()<0.6?'aff':'q';
+      if(variant==='aff'){ es = t[0]+' '+form+' '+c[0]+'.'; en = cap(t[1])+' '+pron+' '+hv+' '+enVP+' '+c[1]+'.'; }
+      else { es = '¿'+cap(form)+' '+c[0]+' '+t[0].toLowerCase()+'?'; en = cap(hv)+' '+pron+' '+enVP+' '+c[1]+' '+t[1]+'?'; }
+    }
+    verbPhrase = form.replace('Todavía no ','');
+  }
+  else if(tense==='fut'){
+    const form = vp(v.f.fut[p]);
+    let variant = Math.random();
+    if(variant<0.1 && (p===0||p===3)){
+      es = 'Te prometo que '+form+' '+c[0]+'.';
+      en = 'I promise '+(p===0?"I'll":"we'll")+' '+(v.modal?'be able to ':'')+(v.be?'be ':(v.modal?'':v.en.b+' '))+c[1]+'.';
+    } else {
+      const t = rnd(T_FUT);
+      const vb = v.be?'be':(v.modal?'be able to':v.en.b);
+      variant = Math.random()<0.55?'aff':(Math.random()<0.5?'neg':'q');
+      if(variant==='aff'){ es = t[0]+' '+form+' '+c[0]+'.'; en = t[1]+' '+pron+' will '+vb+' '+c[1]+'.'; }
+      else if(variant==='neg'){ es = t[0]+' no '+form+' '+c[0]+'.'; en = t[1]+' '+pron+" won't "+vb+' '+c[1]+'.'; }
+      else { es = '¿'+cap(form)+' '+c[0]+' '+t[0].toLowerCase()+'?'; en = 'Will '+pron+' '+vb+' '+c[1]+' '+t[1].toLowerCase()+'?'; }
+    }
+    verbPhrase = form;
+  }
+  return {tense, v, p, es, en, verbPhrase};
+}
+function genSubj(){
+  const trig = rnd(TRIGGERS);
+  const p = pickPerson(trig.pers);
+  let v = pickCard('subj');
+  const c = rnd(v.comps);
+  const she = Math.random()<0.5;
+  const pron = p===2 ? (she?'she':'he') : PERS[p].en;
+  const obj = p===2 ? (she?'her':'him') : OBJ[p];
+  const form = (v.refl? CL[p]+' ':'')+v.f.subj[p];
+  const es = trig.es+' '+form+' '+c[0]+'.';
+  let en='';
+  const vb = v.be?'be':(v.modal?'be able to':v.en.b);
+  if(trig.type==='want') en = 'I want '+obj+' to '+vb+' '+c[1]+'.';
+  else if(trig.type==='hope') en = 'I hope '+pron+' '+(v.modal?'can':enS(v,p))+' '+c[1]+'.';
+  else if(trig.type==='doubt') en = "I don't think "+pron+' will '+(v.modal?'be able to':vb)+' '+c[1]+'.';
+  else en = "It's possible that "+pron+' will '+(v.modal?'be able to':vb)+' '+c[1]+'.';
+  return {tense:'subj', v, p, es, en, verbPhrase:form};
+}
+function genSi(){
+  const cond = rnd(SI_COND);
+  let res = rnd(SI_RES);
+  while(res[0]===cond[0]) res = rnd(SI_RES);
+  const cv = VERBS.find(x=>(x.raw||x.inf)===cond[0]);
+  const rv = VERBS.find(x=>(x.raw||x.inf)===res[0]);
+  const p = pickPerson([0,1,2,3,4,5]);
+  const she = Math.random()<0.5;
+  const pron = p===2 ? (she?'she':'he') : PERS[p].en;
+  const es = 'Si '+cv.f.isubj[p]+' '+cond[1]+', '+rv.f.cond[p]+' '+res[1]+'.';
+  const en = 'If '+pron+' '+cond[2]+', '+pron+' would '+res[2]+'.';
+  return {tense:'si', v:cv, p, es, en, verbPhrase:cv.f.isubj[p]+' … '+rv.f.cond[p], siRes:rv};
+}
+function genCmd(){
+  const v = pickCard('cmd');
+  const cpi = pickPerson([0,1,2,3,4]); // index into CMD_PERS
+  const cp = CMD_PERS[cpi];
+  const c = rnd(v.comps);
+  const neg = Math.random()<0.4;
+  const vb = v.be?'be':v.en.b;
+  let es, en, verbPhrase;
+  if(neg){
+    const form = 'no '+v.f.subj[cp.si];
+    es = '¡'+cap(form)+' '+c[0]+'!';
+    en = (cpi===2? "Let's not "+vb : "Don't "+vb)+' '+c[1]+'!'+(cpi===1?' (formal)':'');
+    verbPhrase = form;
+  } else {
+    const form = v.f.cmd[cpi];
+    es = '¡'+cap(form)+' '+c[0]+'!';
+    en = cp.en(vb+' '+c[1]).replace('!','!');
+    verbPhrase = form;
+  }
+  return {tense:'cmd', v, p:cp.si, es, en, verbPhrase, cmdP:cp.es};
+}
+
+/* honest sentence counter */
+function countAll(){
+  let n=0;
+  VERBS.forEach(v=>{
+    if(allowed(v,'pret')) n += 6*v.comps.length*3;
+    if(allowed(v,'imp'))  n += 6*v.comps.length*2;
+    if(allowed(v,'perf')) n += 6*v.comps.length*(2*2+2); // 2 markers×(aff,q) + ya + todavía no
+    if(allowed(v,'subj')) n += TRIGGERS.reduce((s,t)=>s+t.pers.length,0)*v.comps.length;
+    if(allowed(v,'fut'))  n += 6*v.comps.length*3 + 2*v.comps.length;
+    if(allowed(v,'cmd'))  n += 5*v.comps.length*2;
+  });
+  SI_COND.forEach(c=>SI_RES.forEach(r=>{ if(c[0]!==r[0]) n+=6; }));
+  return n;
+}
+
+/* form index for scenario highlighting */
+const FORM_INDEX = {};
+VERBS.forEach(v=>{
+  if(v.inf==='haber') return;
+  const add=(f,t)=>{ if(f) FORM_INDEX[norm(f)] = FORM_INDEX[norm(f)]||t; };
+  if(!v.blocks||!v.blocks.includes('pret')) v.f.pret.forEach(f=>add(f,'pret'));
+  if(!v.blocks||!v.blocks.includes('imp')) v.f.imp.forEach(f=>add(f,'imp'));
+  v.f.subj.forEach(f=>add(f,'subj'));
+  v.f.isubj.forEach(f=>add(f,'si'));
+  v.f.cond.forEach(f=>add(f,'si'));
+  v.f.fut.forEach(f=>add(f,'fut'));
+  add(v.f.pp,'perf');
+  if(v.f.cmd) v.f.cmd.forEach(f=>add(f,'cmd'));
+});
+HABER.forEach(f=>{ FORM_INDEX[norm(f)] = FORM_INDEX[norm(f)]||'perf'; });
+
+/* ================= UI ================= */
+const view = document.getElementById('view');
+const micFab = document.getElementById('micFab');
+const dlg = document.getElementById('dlg');
+document.getElementById('gearBtn').onclick = ()=>{ dlg.showModal(); };
+const dSel = document.getElementById('dialectSel');
+dSel.value = settings.dialect;
+dSel.onchange = ()=>{ settings.dialect = dSel.value; SAVE('set',settings); };
+
+document.getElementById('hero').innerHTML = '<b>'+countAll().toLocaleString('es')+'</b> frases · 7 tiempos · 23 verbos';
+
+const TABS = [['aprende','📖 Aprende'],['forja','🔨 Forja'],['contrasta','⚖️ Contrasta'],['escenarios','🎬 Escenarios'],['progreso','📊 Progreso']];
+const navEl = document.getElementById('nav');
+navEl.innerHTML = TABS.map(t=>'<button data-t="'+t[0]+'">'+t[1]+'</button>').join('');
+navEl.querySelectorAll('button').forEach(b=>b.onclick=()=>{ setTab(b.dataset.t); });
+function setTab(t){
+  tab = t; stopScenario(); stopMic();
+  navEl.querySelectorAll('button').forEach(b=>b.classList.toggle('on', b.dataset.t===t));
+  micFab.style.display='none';
+  ({aprende:renderAprende, forja:renderForja, contrasta:renderContrasta, escenarios:renderEscenarios, progreso:renderProgreso})[t]();
+  window.scrollTo(0,0);
+}
+
+/* ---------- APRENDE ---------- */
+function endingsRows(t){
+  const rows = {
+   pret:[['−ar','-é, -aste, -ó, -amos, -asteis, -aron'],['−er / −ir','-í, -iste, -ió, -imos, -isteis, -ieron'],['raíz fuerte','-e, -iste, -o, -imos, -isteis, -(i)eron (sin tilde)']],
+   imp:[['−ar','-aba, -abas, -aba, -ábamos, -abais, -aban'],['−er / −ir','-ía, -ías, -ía, -íamos, -íais, -ían'],['irregulares','solo 3: era, iba, veía']],
+   subj:[['−ar → e','-e, -es, -e, -emos, -éis, -en'],['−er/−ir → a','-a, -as, -a, -amos, -áis, -an'],['truco','parte del «yo» presente: tengo → tenga, hago → haga']],
+   perf:[['haber','he, has, ha, hemos, habéis, han'],['participio','-ado / -ido'],['irregulares','hecho, dicho, visto, puesto']],
+   si:[['fórmula','Si + imperf. de subjuntivo, + condicional'],['imperf. subj.','3ª pl. pretérito − ron + ra: tuvieron → tuviera'],['condicional','infinitivo + -ía, -ías, -ía, -íamos, -íais, -ían']],
+   fut:[['todos','infinitivo + -é, -ás, -á, -emos, -éis, -án'],['raíces irreg.','tendr-, har-, podr-, dir-, sabr-, saldr-, vendr-, pondr-, querr-']],
+   cmd:[['tú +','3ª sg. presente: habla, come'],['tú irreg.','ten, haz, ven, pon, sal, di, sé, ve, da'],['usted / nosotros','forma de subjuntivo: hable, hablemos'],['negativo','no + subjuntivo: ¡no hables!']]
+  }[t];
+  return rows.map(r=>'<tr><td>'+r[0]+'</td><td>'+r[1]+'</td></tr>').join('');
+}
+function tenseChunks(t){
+  const c = {
+   pret:['ayer','anoche','la semana pasada','el año pasado','de repente'],
+   imp:['antes','todos los días','cuando era niño','en aquel entonces','mientras'],
+   subj:['quiero que…','espero que…','no creo que…','es posible que…','cuando llegues… (futuro)'],
+   perf:['hoy','esta semana','ya','todavía no','alguna vez'],
+   si:['si pudiera…','si tuviera…','si fuera tú…','me gustaría…','¿podrías…?'],
+   fut:['mañana','algún día','te prometo que…','pronto'],
+   cmd:['dime','mira','oye','ven','dame','espera','no te preocupes','vamos']
+  }[t];
+  return c.map(x=>'<span class="pill">'+x+'</span>').join('');
+}
+function tenseExamples(t){
+  const ex = {
+   pret:[['Ayer compré pan.','Yesterday I bought bread.'],['Anoche no dormí bien.',"Last night I didn't sleep well."]],
+   imp:[['Antes trabajaba mucho.','I used to work a lot.'],['Cuando era niño, vivíamos en España.','When I was a kid, we lived in Spain.']],
+   subj:[['Quiero que hables con él.','I want you to speak with him.'],['No creo que venga.',"I don't think he'll come."]],
+   perf:[['Hoy he trabajado mucho.','Today I have worked a lot.'],['Todavía no he comido.',"I haven't eaten yet."]],
+   si:[['Si tuviera más dinero, compraría una casa.','If I had more money, I would buy a house.'],['Si pudieras, ¿vendrías?','If you could, would you come?']],
+   fut:[['Mañana trabajaré menos.','Tomorrow I will work less.'],['Te prometo que iré.','I promise I will go.']],
+   cmd:[['¡Dime la verdad!','Tell me the truth!'],['¡No hables tan rápido!',"Don't speak so fast!"]]
+  }[t];
+  return ex.map(e=>'<div class="row" style="margin:4px 0"><button class="btn sm" onclick="speak(\''+e[0].replace(/'/g,"\\'")+'\')">🔊</button><div><div>'+e[0]+'</div><div class="muted small">'+e[1]+'</div></div></div>').join('');
+}
+function irregularsFor(t){
+  if(t==='pret'){
+    const g = {};
+    VERBS.forEach(v=>{ if(v.pretFull && allowed(v,'pret')){ (g[v.pat]=g[v.pat]||[]).push((v.raw||v.inf)+' → '+v.f.pret[0]); } });
+    return Object.keys(g).map(k=>'<tr><td>'+k+'</td><td>'+g[k].join(', ')+'</td></tr>').join('');
+  }
+  if(t==='subj'){
+    return VERBS.filter(v=>v.subjFull&&v.inf!=='haber').map(v=>'<tr><td>'+(v.raw||v.inf)+'</td><td>'+v.f.subj[0]+'</td></tr>').join('');
+  }
+  return '';
+}
+function renderAprende(){
+  let h = '<div class="card"><h2>¿Cuál uso? — decide en 2 segundos</h2><div class="decide">'
+    + TKEYS.map(t=>'<div style="--tc2:'+TENSES[t].color+'"><b>'+TENSES[t].name+'</b> — '+TENSES[t].when+'</div>').join('')
+    + '</div><p class="muted small">Presupuesto de palabras: 23 verbos, ~40 frases disparadoras. No estás aprendiendo mil formas — estás aprendiendo unas <b style="color:var(--accent)">~180 reglas y raíces</b> que las generan todas.</p></div>';
+  TKEYS.forEach(t=>{
+    h += '<div class="card tcard" style="--tc:'+TENSES[t].color+'">'
+      + '<h2><span class="tchip" style="--tc:'+TENSES[t].color+'">'+TENSES[t].name+'</span></h2>'
+      + '<p class="muted">'+TENSES[t].when+'</p>'
+      + '<h3>Formas</h3><table>'+endingsRows(t)+'</table>'
+      + (irregularsFor(t)?'<h3>Irregulares del set</h3><table class="formsTbl">'+irregularsFor(t)+'</table>':'')
+      + '<h3>Disparadores</h3><div>'+tenseChunks(t)+'</div>'
+      + '<h3>Ejemplos</h3>'+tenseExamples(t)
+      + '<div style="margin-top:10px"><button class="btn primary" onclick="practicar(\''+t+'\')">Practicar '+TENSES[t].name+' →</button></div>'
+      + '</div>';
+  });
+  view.innerHTML = h;
+}
+function practicar(t){ activeTenses=[t]; SAVE('ft',activeTenses); setTab('forja'); }
+
+/* ---------- FORJA ---------- */
+let rec = null, listening = false;
+function stopMic(){ if(rec){ try{rec.stop();}catch(e){} rec=null; } listening=false; micFab.classList.remove('listening'); }
+
+function renderForja(){
+  if(!forjaMode) forjaMode = (hasMic && !isTouch) ? 'habla' : 'armar';
+  if(forjaMode==='habla' && !hasMic) forjaMode='armar';
+  let h = '<div class="card">'
+    + '<div class="row">'
+    + '<button class="mode'+(forjaMode==='habla'?' on':'')+'" '+(hasMic?'':'disabled title="Sin reconocimiento de voz"')+' onclick="setMode(\'habla\')">🎤 Habla</button>'
+    + '<button class="mode'+(forjaMode==='armar'?' on':'')+'" onclick="setMode(\'armar\')">🧩 Armar</button>'
+    + '<button class="mode'+(forjaMode==='escucha'?' on':'')+'" '+(hasTTS?'':'disabled')+' onclick="setMode(\'escucha\')">🎧 Escucha</button>'
+    + '</div><div class="chips">'
+    + TKEYS.map(t=>'<button class="chip'+(activeTenses.includes(t)?' on':'')+'" style="--tc:'+TENSES[t].color+'" onclick="toggleTense(\''+t+'\')">'+TENSES[t].name+'</button>').join('')
+    + '</div></div><div id="drillArea"></div>';
+  view.innerHTML = h;
+  nextDrill();
+}
+function setMode(m){ forjaMode = m; stopMic(); renderForja(); }
+function toggleTense(t){
+  if(activeTenses.includes(t)){ if(activeTenses.length>1) activeTenses = activeTenses.filter(x=>x!==t); }
+  else activeTenses.push(t);
+  SAVE('ft',activeTenses); renderForja();
+}
+function nextDrill(){
+  stopMic();
+  currentDrill = genDrill();
+  const d = currentDrill;
+  const area = document.getElementById('drillArea'); if(!area) return;
+  const chip = '<span class="tchip" style="--tc:'+TENSES[d.tense].color+'">'+TENSES[d.tense].name+'</span>'
+    + ' <span class="muted small">'+(d.tense==='cmd'?('→ '+d.cmdP):('→ '+PERS[d.p].es))+'</span>';
+  if(forjaMode==='habla'){
+    area.innerHTML = '<div class="card">'+chip
+      + '<div class="drillEN">'+d.en+'</div>'
+      + '<div id="fb"></div>'
+      + '<div class="row">'
+      + (hasMic?'':'<button class="btn" onclick="revealDrill(true)">Revelar</button>')
+      + '<button class="btn" id="revealBtn" onclick="revealDrill(false)">Revelar</button>'
+      + '<button class="btn primary" onclick="nextDrill()">Siguiente →</button>'
+      + '</div></div>';
+    if(hasMic){ micFab.style.display='block'; micFab.onclick = micDrill; }
+  }
+  else if(forjaMode==='armar'){ renderArmar(area, d, chip); micFab.style.display='none'; }
+  else { // escucha
+    area.innerHTML = '<div class="card">'+chip
+      + '<div class="drillEN muted">🎧 Escucha y repite…</div>'
+      + '<div id="fb"></div>'
+      + '<div class="row">'
+      + '<button class="btn" onclick="speak(currentDrill.es)">🔁 Otra vez</button>'
+      + '<button class="btn" onclick="speak(currentDrill.es,0.6)">🐢 Lento</button>'
+      + '<button class="btn" onclick="revealDrill(false)">Revelar</button>'
+      + '<button class="btn primary" onclick="nextDrill()">Siguiente →</button>'
+      + '</div></div>';
+    if(hasMic){ micFab.style.display='block'; micFab.onclick = micDrill; }
+    setTimeout(()=>speak(d.es), 300);
+  }
+}
+function revealDrill(selfGrade){
+  const fb = document.getElementById('fb'); if(!fb) return;
+  const d = currentDrill;
+  fb.innerHTML = '<div class="drillES">'+d.es+' <button class="btn sm" onclick="speak(currentDrill.es)">🔊</button></div>'
+    + (forjaMode==='escucha'?'<div class="muted">'+d.en+'</div>':'')
+    + '<div class="row" style="margin-top:8px"><span class="muted small">¿Lo dijiste bien?</span>'
+    + '<button class="btn sm" onclick="selfMark(true)">✔️ Sí</button>'
+    + '<button class="btn sm" onclick="selfMark(false)">✖️ No</button></div>';
+}
+function selfMark(ok){
+  bump(ok, currentDrill.tense, false, false);
+  const fb = document.getElementById('fb');
+  if(fb) fb.innerHTML += '<div class="feedback '+(ok?'ok':'bad')+'">'+(ok?'¡Bien! Anotado.':'Anotado — volverá pronto.')+'</div>';
+}
+function micDrill(){
+  if(listening){ stopMic(); return; }
+  if(!SR) return;
+  rec = new SR(); rec.lang = settings.dialect; rec.interimResults=false; rec.maxAlternatives=3;
+  listening = true; micFab.classList.add('listening');
+  rec.onresult = e=>{
+    let best = '';
+    for(let i=0;i<e.results[0].length;i++){ best += ' ' + e.results[0][i].transcript; }
+    gradeSpoken(best);
+  };
+  rec.onend = ()=>{ listening=false; micFab.classList.remove('listening'); };
+  rec.onerror = ()=>{ listening=false; micFab.classList.remove('listening'); };
+  try{ rec.start(); }catch(e){}
+}
+function gradeSpoken(transcript){
+  const d = currentDrill;
+  const t = norm(transcript);
+  const vpWords = norm(d.verbPhrase).split(' ').filter(w=>w&&w!=='…');
+  const hasVerb = vpWords.every(w=>t.includes(w));
+  const rest = norm(d.es).split(' ').filter(w=>!vpWords.includes(w));
+  const hitRest = rest.filter(w=>t.includes(w)).length;
+  const ok = hasVerb && (rest.length===0 || hitRest/rest.length>=0.5);
+  bump(ok, d.tense, true, false);
+  const fb = document.getElementById('fb'); if(!fb) return;
+  fb.innerHTML = '<div class="feedback '+(ok?'ok':'bad')+'">'+(ok?'✅ ¡Eso es!':'❌ Casi — fíjate en el verbo.')
+    + '<div class="muted small" style="margin-top:4px">Oí: «'+transcript.trim()+'»</div></div>'
+    + '<div class="drillES">'+d.es+' <button class="btn sm" onclick="speak(currentDrill.es)">🔊</button></div>'
+    + (forjaMode==='escucha'?'<div class="muted">'+d.en+'</div>':'');
+}
+/* Armar (tiles) */
+let armarState = null;
+function renderArmar(area, d, chip){
+  const words = d.es.replace(/[¿?¡!.,]/g,'').split(' ').filter(Boolean);
+  // distractors: other forms of same verb
+  const dis = [];
+  const v = d.v, p = Math.min(d.p,5);
+  const pool = [v.f.pret[p], v.f.imp[p], v.f.fut[p], v.f.cond[p], v.f.subj[p], v.f.isubj[p]]
+    .filter(f=>f && !words.map(norm).includes(norm(f)));
+  shuffle(pool).slice(0,2).forEach(f=>dis.push(f));
+  const op = (p+1)%6;
+  const altP = {pret:v.f.pret,imp:v.f.imp,fut:v.f.fut,subj:v.f.subj,si:v.f.isubj,perf:null,cmd:null}[d.tense];
+  if(altP && altP[op] && !words.map(norm).includes(norm(altP[op]))) dis.push(altP[op]);
+  if(!words.includes('no') && Math.random()<0.4) dis.push('no');
+  armarState = {answer:words, picked:[], tiles:shuffle(words.concat(dis.slice(0,3)))};
+  area.innerHTML = '<div class="card">'+chip
+    + '<div class="drillEN">'+d.en+'</div>'
+    + '<div class="answerZone" id="azone"></div>'
+    + '<div class="tiles" id="tzone"></div>'
+    + '<div id="fb"></div>'
+    + '<div class="row">'
+    + '<button class="btn" onclick="armarCheck()">Comprobar</button>'
+    + '<button class="btn primary" onclick="nextDrill()">Siguiente →</button>'
+    + '</div></div>';
+  drawArmar();
+}
+function drawArmar(){
+  const az = document.getElementById('azone'), tz = document.getElementById('tzone');
+  if(!az||!tz) return;
+  az.innerHTML = armarState.picked.map((w,i)=>'<button class="tile" onclick="armarRemove('+i+')">'+w+'</button>').join('');
+  tz.innerHTML = armarState.tiles.map((w,i)=>{
+    const used = armarState.picked.filter((x,j)=>armarState.usedIdx&&armarState.usedIdx[j]===i).length>0;
+    return '<button class="tile'+(armarState.taken&&armarState.taken.includes(i)?' used':'')+'" onclick="armarPick('+i+')">'+w+'</button>';
+  }).join('');
+}
+function armarPick(i){
+  armarState.taken = armarState.taken||[];
+  if(armarState.taken.includes(i)) return;
+  armarState.taken.push(i);
+  armarState.picked.push(armarState.tiles[i]);
+  armarState.pickedFrom = armarState.pickedFrom||[]; armarState.pickedFrom.push(i);
+  drawArmar();
+}
+function armarRemove(j){
+  const from = armarState.pickedFrom[j];
+  armarState.taken = armarState.taken.filter(x=>x!==from);
+  armarState.picked.splice(j,1); armarState.pickedFrom.splice(j,1);
+  drawArmar();
+}
+function armarCheck(){
+  const ok = norm(armarState.picked.join(' ')) === norm(armarState.answer.join(' '));
+  bump(ok, currentDrill.tense, false, true);
+  const fb = document.getElementById('fb'); if(!fb) return;
+  let extra = '';
+  if(!ok && armarState.picked.some(w=>norm(w).startsWith('si ')||false)){}
+  if(!ok && currentDrill.tense==='si' && armarState.picked.some(w=>currentDrill.v.f.cond.map(norm).includes(norm(w)))){
+    extra = '<div class="why">⚠️ El error clásico: después de «si» hipotético va el imperfecto de subjuntivo (tuviera), nunca el condicional (tendría).</div>';
+  }
+  fb.innerHTML = '<div class="feedback '+(ok?'ok':'bad')+'">'+(ok?'✅ ¡Perfecto!':'❌ No exactamente.')+'</div>'
+    + '<div class="drillES">'+currentDrill.es+' <button class="btn sm" onclick="speak(currentDrill.es)">🔊</button></div>' + extra
+    + (ok?'':'');
+}
+
+/* ---------- CONTRASTA ---------- */
+let cSel = null;
+function pickContrast(){
+  const weighted = [];
+  CONTRASTS.forEach((c,i)=>{ const box = csrs[i]||1; for(let k=0;k<(6-box);k++) weighted.push(i); });
+  const i = weighted.length? rnd(weighted) : Math.floor(Math.random()*CONTRASTS.length);
+  return i;
+}
+function renderContrasta(){
+  const i = pickContrast();
+  currentContrast = i;
+  const c = CONTRASTS[i];
+  cSel = c.b.map(()=>null);
+  let h = '<div class="card"><h2>⚖️ '+CONTRAST_NAMES[c.t]+'</h2>'
+    + '<p class="muted small">El vocabulario no cambia — solo la elección del tiempo. Elige la forma correcta en cada hueco.</p>'
+    + '<div class="contrastSent" id="cSent"></div>'
+    + '<div id="cOpts"></div>'
+    + '<div id="cFb"></div>'
+    + '<div class="row"><button class="btn" id="cCheck" onclick="checkContrast()">Comprobar</button>'
+    + '<button class="btn primary" onclick="renderContrasta()">Siguiente →</button></div>'
+    + '<p class="muted small" style="margin-top:10px">'+c.en+'</p></div>';
+  view.innerHTML = h;
+  drawContrast();
+}
+function drawContrast(graded){
+  const c = CONTRASTS[currentContrast];
+  let sent = c.es;
+  c.b.forEach((b,i)=>{
+    const chosen = cSel[i]!==null ? b.o[cSel[i]] : '____';
+    sent = sent.replace('{'+i+'}','<b style="color:var(--accent)">'+chosen+'</b>');
+  });
+  document.getElementById('cSent').innerHTML = sent;
+  document.getElementById('cOpts').innerHTML = c.b.map((b,i)=>
+    '<div class="row" style="margin:6px 0"><span class="muted small">Hueco '+(i+1)+':</span>'
+    + b.o.map((o,j)=>{
+        let cls='blankBtn';
+        if(graded){ if(j===b.a) cls+=' right'; else if(cSel[i]===j) cls+=' wrong'; }
+        else if(cSel[i]===j) cls+=' sel';
+        return '<button class="'+cls+'" onclick="cChoose('+i+','+j+')">'+o+'</button>';
+      }).join('')
+    + '</div>').join('');
+}
+function cChoose(i,j){ cSel[i]=j; drawContrast(); }
+function checkContrast(){
+  const c = CONTRASTS[currentContrast];
+  if(cSel.some(x=>x===null)) return;
+  const ok = c.b.every((b,i)=>cSel[i]===b.a);
+  let box = csrs[currentContrast]||1;
+  csrs[currentContrast] = ok? Math.min(box+1,5) : 1; SAVE('csrs',csrs);
+  stats.answered++; if(ok) stats.correct++;
+  stats.days[today()] = (stats.days[today()]||0)+1;
+  const key='contrast.'+c.t; const ts = stats.tense[key]=stats.tense[key]||{a:0,c:0}; ts.a++; if(ok) ts.c++;
+  SAVE('stats',stats);
+  drawContrast(true);
+  let full = c.es; c.b.forEach((b,i)=>{ full = full.replace('{'+i+'}', b.o[b.a]); });
+  document.getElementById('cFb').innerHTML =
+    '<div class="feedback '+(ok?'ok':'bad')+'">'+(ok?'✅ ¡Exacto!':'❌ No — mira por qué:')+'</div>'
+    + '<div class="why">'+c.why+'</div>'
+    + '<div class="row"><button class="btn sm" onclick="speak('+JSON.stringify(full).replace(/"/g,'&quot;')+')">🔊 '+full+'</button></div>';
+}
+
+/* ---------- ESCENARIOS ---------- */
+let scen = null, scenRec = null, scenTimer = null, scenLeft = 0, scenFinal = '', scenRunning = false;
+function renderEscenarios(){
+  let h = '<div class="card"><h2>🎬 Escenarios</h2><p class="muted small">Habla sin parar. El transcript pinta cada verbo con el color de su tiempo — así <i>ves</i> qué tiempos usas.</p></div>';
+  SCENARIOS.forEach((s,i)=>{
+    h += '<div class="card"><div class="row" style="justify-content:space-between">'
+      + '<div><b>'+s.t+'</b><div class="muted small">'+s.en+' · '+s.secs+'s · '
+      + s.tenses.map(t=>'<span class="tchip" style="--tc:'+TENSES[t].color+'">'+TENSES[t].name+'</span>').join(' ')+'</div></div>'
+      + '<button class="btn primary" '+(hasMic?'':'disabled title="Necesita reconocimiento de voz"')+' onclick="startScenario('+i+')">▶</button>'
+      + '</div></div>';
+  });
+  if(!hasMic) h += '<div class="card muted small">Tu navegador no tiene reconocimiento de voz — prueba Chrome o Edge.</div>';
+  view.innerHTML = h;
+}
+function startScenario(i){
+  scen = SCENARIOS[i]; scenLeft = scen.secs; scenFinal=''; scenRunning=true;
+  view.innerHTML = '<div class="card"><h2>'+scen.t+'</h2>'
+    + '<div class="row" style="justify-content:space-between"><div class="timer" id="sTimer">'+scenLeft+'</div>'
+    + '<button class="btn" onclick="stopScenario(true)">■ Terminar</button></div>'
+    + '<div class="transcript" id="sTrans"><span class="muted">Escuchando…</span></div>'
+    + '<div id="sSum"></div></div>';
+  scenTimer = setInterval(()=>{
+    scenLeft--; const el = document.getElementById('sTimer');
+    if(el) el.textContent = scenLeft;
+    if(scenLeft<=0) stopScenario(true);
+  },1000);
+  scenRec = new SR(); scenRec.lang = settings.dialect; scenRec.continuous = true; scenRec.interimResults = true;
+  scenRec.onresult = e=>{
+    // idempotent rebuild: walk ALL results each time (Chrome re-delivers finals)
+    let fin = '', interim = '';
+    for(let r=0;r<e.results.length;r++){
+      if(e.results[r].isFinal) fin += e.results[r][0].transcript + ' ';
+      else interim += e.results[r][0].transcript + ' ';
+    }
+    scenFinal = fin;
+    paintTranscript(fin, interim);
+  };
+  scenRec.onend = ()=>{ if(scenRunning){ try{ scenRec.start(); }catch(e){} } };
+  try{ scenRec.start(); }catch(e){}
+}
+function paintTranscript(fin, interim){
+  const el = document.getElementById('sTrans'); if(!el) return;
+  const html = (fin+' '+(interim||'')).trim().split(/\s+/).map(w=>{
+    const t = FORM_INDEX[norm(w)];
+    return t? '<span class="hit" style="background:'+TENSES[t].color+'">'+w+'</span>' : w;
+  }).join(' ');
+  el.innerHTML = html || '<span class="muted">Escuchando…</span>';
+}
+function stopScenario(showSummary){
+  scenRunning = false;
+  if(scenTimer){ clearInterval(scenTimer); scenTimer=null; }
+  if(scenRec){ try{ scenRec.stop(); }catch(e){} scenRec=null; }
+  if(showSummary && scen){
+    const counts = {};
+    scenFinal.trim().split(/\s+/).forEach(w=>{ const t=FORM_INDEX[norm(w)]; if(t) counts[t]=(counts[t]||0)+1; });
+    const hits = scen.tenses.map(t=>(counts[t]||0)).reduce((a,b)=>a+b,0);
+    const el = document.getElementById('sSum');
+    if(el){
+      el.innerHTML = '<div class="feedback '+(hits>=3?'ok':'bad')+'">'
+        + (hits>=3?'✅ ¡Bien!':'💪 Sigue intentando —')+' usaste <b>'+hits+'</b> formas de los tiempos objetivo.'
+        + '<div class="small" style="margin-top:6px">'+Object.keys(counts).map(t=>'<span class="tchip" style="--tc:'+TENSES[t].color+'">'+TENSES[t].name+': '+counts[t]+'</span>').join(' ')+'</div></div>'
+        + '<button class="btn primary" onclick="renderEscenarios()">← Escenarios</button>';
+    }
+    stats.days[today()] = (stats.days[today()]||0)+1; SAVE('stats',stats);
+  }
+  scen = showSummary? scen : null;
+}
+
+/* ---------- PROGRESO ---------- */
+function renderProgreso(){
+  const dayKeys = Object.keys(stats.days).sort();
+  let streak = 0;
+  { let d = new Date();
+    while(true){ const k = d.toISOString().slice(0,10); if(stats.days[k]){ streak++; d.setDate(d.getDate()-1);} else break; } }
+  const totalCards = {}; let mastered=0, totalFacts=0;
+  let h = '<div class="card"><h2>📊 Progreso</h2><div class="statgrid">'
+    + '<div class="statbox"><div class="n">'+stats.spoken+'</div><div class="muted small">frases habladas</div></div>'
+    + '<div class="statbox"><div class="n">'+(stats.answered?Math.round(100*stats.correct/stats.answered):0)+'%</div><div class="muted small">aciertos ('+stats.answered+')</div></div>'
+    + '<div class="statbox"><div class="n">'+streak+'</div><div class="muted small">días seguidos</div></div>'
+    + '<div class="statbox"><div class="n">'+dayKeys.length+'</div><div class="muted small">días en total</div></div>'
+    + '</div></div>';
+  h += '<div class="card"><h2>Dominio por tiempo</h2>';
+  TKEYS.forEach(t=>{
+    const vs = VERBS.filter(v=>allowed(v,t));
+    const keys = t==='si'? SI_COND.map(c=>'si|'+c[0]) : vs.map(v=>t+'|'+v.inf);
+    let sum=0; keys.forEach(k=>{ sum += (srs[k]||1)-1; });
+    const pct = keys.length? Math.round(100*sum/(keys.length*4)) : 0;
+    h += '<div class="row" style="justify-content:space-between"><span class="tchip" style="--tc:'+TENSES[t].color+'">'+TENSES[t].name+'</span><span class="muted small">'+pct+'%</span></div>'
+      + '<div class="bar" style="--tc:'+TENSES[t].color+'"><i style="width:'+pct+'%"></i></div>';
+  });
+  h += '</div>';
+  h += '<div class="card"><h2>⚖️ Contrasta</h2>';
+  Object.keys(CONTRAST_NAMES).forEach(k=>{
+    const s = stats.tense['contrast.'+k];
+    const pct = s&&s.a? Math.round(100*s.c/s.a) : null;
+    h += '<div class="row" style="justify-content:space-between;margin:4px 0"><span>'+CONTRAST_NAMES[k]+'</span><span class="muted">'+(pct===null?'—':pct+'% de '+s.a)+'</span></div>';
+  });
+  h += '</div>';
+  const boxes = Object.values(srs);
+  const done = boxes.filter(b=>b>=4).length;
+  h += '<div class="card"><h2>Presupuesto de palabras</h2><p class="muted small">Tarjetas verbo×tiempo en cajas 4–5 (dominadas al hablar): <b style="color:var(--accent)">'+done+'</b> de '+Object.keys(srs).length+' vistas. El set completo son ~180 hechos (raíces + terminaciones + disparadores) — no miles de palabras.</p></div>';
+  view.innerHTML = h;
+}
+
+/* ---------- boot ---------- */
+if(hasTTS) speechSynthesis.onvoiceschanged = ()=>{};
+setTab('aprende');
+</script>
+</body>
+</html>
